@@ -361,7 +361,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="${ctx}/assets/js/sweetalert-config.js?v=20261113e"></script>
-    <script src="${ctx}/assets/js/script.js?v=20261113e"></script>
+    <script src="${ctx}/assets/js/script.js?v=20261117n"></script>
     <script src="${ctx}/assets/js/modal.js?v=20261113e"></script>
     <script src="${ctx}/assets/js/buscador-select.js?v=20261113e"></script>
     <script src="${ctx}/assets/js/dni-lookup.js?v=20261113e"></script>

@@ -10,6 +10,30 @@
     <p class="text-muted mb-0">Equipos que tienes en préstamo actualmente.</p>
 </div>
 
+<!-- Exportar ambas tablas -->
+<div class="flex justify-end gap-2 mb-4 flex-wrap">
+    <button type="button" class="btn-export-excel" onclick="exportarMisExcel()" title="Exportar ambas tablas a Excel (CSV)">
+        <i class="ri-file-excel-2-line"></i> Excel (ambos cuadros)
+    </button>
+    <button type="button" class="btn-export-pdf" onclick="exportarMisPDF()" title="Exportar ambas tablas a PDF">
+        <i class="ri-file-pdf-2-line"></i> PDF (ambos cuadros)
+    </button>
+</div>
+
+<!-- Selector de registros por página -->
+<div class="flex justify-end gap-2 mb-4 flex-wrap items-center">
+    <label for="selectRegistrosMis" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+    <select id="selectRegistrosMis" class="form-select form-select-sm" style="width: auto;">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select>
+    <span class="text-[0.875em] text-muted">registros</span>
+</div>
+
 <!-- Prestando -->
 <div class="card shadow-sm border-0 mb-6">
     <div class="card-header bg-white py-4 px-6 flex flex-wrap justify-between items-center gap-2">
@@ -114,17 +138,21 @@
 
 <script>
 (function () {
-    function paginar(idTabla, idPag, porPagina) {
+    var select = document.getElementById('selectRegistrosMis');
+    function porPagina() { return select ? (parseInt(select.value, 10) || 10) : 10; }
+
+    function paginar(idTabla, idPag) {
         var tabla = document.getElementById(idTabla);
         var cont = document.getElementById(idPag);
         if (!tabla || !cont) return;
         var filas = Array.from(tabla.querySelectorAll('tbody tr'));
-        var total = Math.ceil(filas.length / porPagina);
+        var pp = porPagina();
+        var total = Math.ceil(filas.length / pp);
         if (total <= 1) { cont.style.display = 'none'; return; }
         var pagina = 1;
         function render() {
             filas.forEach(function (fila, idx) {
-                fila.style.display = (idx >= (pagina - 1) * porPagina && idx < pagina * porPagina) ? '' : 'none';
+                fila.style.display = (idx >= (pagina - 1) * pp && idx < pagina * pp) ? '' : 'none';
             });
             cont.innerHTML = '';
             for (var i = 1; i <= total; i++) {
@@ -134,17 +162,30 @@
                 btn.type = 'button';
                 btn.className = 'page-link';
                 btn.textContent = i;
-                (function (p) {
-                    btn.addEventListener('click', function () { pagina = p; render(); });
-                })(i);
+                (function (p) { btn.addEventListener('click', function () { pagina = p; render(); }); })(i);
                 li.appendChild(btn);
                 cont.appendChild(li);
             }
         }
         render();
     }
-    paginar('tablaPrestando', 'pagPrestando', 5);
-    paginar('tablaDevueltos', 'pagDevueltos', 5);
+
+    function aplicar() {
+        paginar('tablaPrestando', 'pagPrestando');
+        paginar('tablaDevueltos', 'pagDevueltos');
+    }
+    aplicar();
+    if (select) select.addEventListener('change', aplicar);
 })();
+
+function exportarMisExcel() {
+    exportMultipleTablesToCSV(['tablaPrestando', 'tablaDevueltos'], 'mis_equipos_completo.csv');
+}
+function exportarMisPDF() {
+    exportMultipleTablesToPDF([
+        { id: 'tablaPrestando', title: 'Mis Equipos - Prestando' },
+        { id: 'tablaDevueltos', title: 'Mis Equipos - Devueltos' }
+    ], 'mis_equipos_completo.pdf');
+}
 </script>
 </t:layout>
