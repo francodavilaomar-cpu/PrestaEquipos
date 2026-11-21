@@ -183,6 +183,7 @@ public class EquipoServlet extends BaseServlet {
         req.setAttribute("solicitudesRegistrables", registrables);
         req.setAttribute("pageTitle", "Bandeja de Solicitudes");
         req.setAttribute("nav", "equipos");
+        req.setAttribute("tabActiva", "solicitudes");
         render(req, res, "equipos/bandeja", "Bandeja de Solicitudes", "equipos");
     }
 

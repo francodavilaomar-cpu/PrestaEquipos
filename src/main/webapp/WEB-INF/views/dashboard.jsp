@@ -7,8 +7,7 @@
 
 <!-- Banner Institucional UNCP -->
 <div class="relative overflow-hidden mb-6 rounded-2xl text-white px-5 py-7 md:px-10 md:py-9 shadow-[0_6px_22px_rgb(0_77_61/0.18)] bg-[linear-gradient(135deg,#01372c_0%,#004d3d_50%,#005a46_100%)]">
-    <img src="${ctx}/assets/img/uncp-escudo.png" alt="UNCP" class="hidden md:block absolute top-1/2 -translate-y-1/2 left-6 size-[140px] object-contain opacity-[0.12] pointer-events-none select-none">
-    <img src="${ctx}/assets/img/uncp-escudo.png" alt="UNCP" class="hidden md:block absolute top-1/2 -translate-y-1/2 right-8 size-[160px] object-contain opacity-[0.12] pointer-events-none select-none">
+    <img src="${ctx}/assets/img/uncp-escudo.png" alt="UNCP" class="hidden md:block absolute top-1/2 -translate-y-1/2 right-8 size-[160px] object-contain opacity-[0.35] pointer-events-none select-none">
     <div class="relative z-[2]">
         <div class="inline-flex items-center gap-2.5 mb-4 px-3.5 py-1 rounded-full bg-black/[0.22] border border-white/[0.18] backdrop-blur-[4px]">
             <span class="px-2 py-0.5 rounded-full bg-gold text-ink text-xs font-extrabold tracking-wide">UNCP</span>

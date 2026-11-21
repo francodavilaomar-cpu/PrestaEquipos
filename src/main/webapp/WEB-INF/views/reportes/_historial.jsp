@@ -4,6 +4,17 @@
 <%@ taglib prefix="t" tagdir="/WEB-INF/tags" %>
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
 
+<script>
+window.reportePersona = {
+    nombre: '${f:h(usuarioHistorial.nombre)}',
+    universidad: 'UNIVERSIDAD NACIONAL DEL CENTRO DEL PERÚ',
+    dni: '${f:h(usuarioHistorial.dni)}',
+    celular: '${f:h(usuarioHistorial.celular)}',
+    correo: '${f:h(usuarioHistorial.email)}',
+    fechaRegistro: '${f:fecha(usuarioHistorial.fechaRegistro, "dd/MM/yyyy")}'
+};
+</script>
+
 <div class="mb-4 flex items-center gap-3">
     <div class="bg-primary-subtle text-primary rounded-full inline-flex p-3">
         <i class="ri-user-3-line" style="font-size: 1.5rem;"></i>
@@ -12,6 +23,30 @@
         <h5 class="font-bold text-dark mb-0">${f:h(usuarioHistorial.nombre)}</h5>
         <small class="text-muted">${f:h(usuarioHistorial.email)}</small>
     </div>
+</div>
+
+<!-- Exportar ambas tablas -->
+<div class="flex justify-end gap-2 mb-4 flex-wrap">
+    <button type="button" class="btn-export-excel" onclick="exportarHistorialExcel()" title="Exportar ambas tablas a Excel">
+        <i class="ri-file-excel-2-line"></i> Excel (ambos cuadros)
+    </button>
+    <button type="button" class="btn-export-pdf" onclick="exportarHistorialPDF()" title="Exportar ambas tablas a PDF">
+        <i class="ri-file-pdf-2-line"></i> PDF (ambos cuadros)
+    </button>
+</div>
+
+<!-- Selector de registros por página -->
+<div class="flex justify-end gap-2 mb-4 flex-wrap items-center">
+    <label for="selectRegistrosHistorial" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+    <select id="selectRegistrosHistorial" class="form-select form-select-sm" style="width: auto;">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select>
+    <span class="text-[0.875em] text-muted">registros</span>
 </div>
 
 <!-- Prestando -->
@@ -33,6 +68,7 @@
                         <th>Fecha Préstamo</th>
                         <th>Devolución Esperada</th>
                         <th>Estado</th>
+                        <th class="col-boleta pe-6">Boleta</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,11 +82,12 @@
                                 <td>${f:fecha(p.fechaPrestamo, 'dd/MM/yyyy HH:mm')}</td>
                                 <td>${f:fecha(p.fechaDevolucionEsperada, 'dd/MM/yyyy')}</td>
                                 <td><span class="badge ${p.estado == 'vencido' ? 'badge-vencido' : 'badge-prestado'}">${f:cap(p.estado)}</span></td>
+                                <td class="col-boleta"><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirBoleta('prestamo', ${p.id})" title="Ver boleta"><i class="ri-file-text-line me-1"></i> Boleta</button></td>
                             </tr>
                         </c:if>
                     </c:forEach>
                     <c:if test="${!hayPrestando}">
-                        <tr><td colspan="5" class="text-center text-muted py-6">No tiene equipos en préstamo actualmente.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-6">No tiene equipos en préstamo actualmente.</td></tr>
                     </c:if>
                 </tbody>
             </table>
@@ -80,6 +117,7 @@
                         <th>Fecha Préstamo</th>
                         <th>Devuelto el</th>
                         <th>Estado</th>
+                        <th class="col-boleta pe-6">Boleta</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,11 +131,12 @@
                                 <td>${f:fecha(p.fechaPrestamo, 'dd/MM/yyyy HH:mm')}</td>
                                 <td>${f:fecha(p.fechaDevolucionReal, 'dd/MM/yyyy HH:mm')}</td>
                                 <td><span class="badge badge-disponible">Devuelto</span></td>
+                                <td class="col-boleta"><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirBoleta('prestamo', ${p.id})" title="Ver boleta"><i class="ri-file-text-line me-1"></i> Boleta</button></td>
                             </tr>
                         </c:if>
                     </c:forEach>
                     <c:if test="${!hayDevueltos}">
-                        <tr><td colspan="5" class="text-center text-muted py-6">No tiene equipos devueltos.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted py-6">No tiene equipos devueltos.</td></tr>
                     </c:if>
                 </tbody>
             </table>
@@ -110,17 +149,21 @@
 
 <script>
 (function () {
-    function paginar(idTabla, idPag, porPagina) {
+    var select = document.getElementById('selectRegistrosHistorial');
+    function porPagina() { return select ? (parseInt(select.value, 10) || 10) : 10; }
+
+    function paginar(idTabla, idPag) {
         var tabla = document.getElementById(idTabla);
         var cont = document.getElementById(idPag);
         if (!tabla || !cont) return;
         var filas = Array.from(tabla.querySelectorAll('tbody tr'));
-        var total = Math.ceil(filas.length / porPagina);
+        var pp = porPagina();
+        var total = Math.ceil(filas.length / pp);
         if (total <= 1) { cont.style.display = 'none'; return; }
         var pagina = 1;
         function render() {
             filas.forEach(function (fila, idx) {
-                fila.style.display = (idx >= (pagina - 1) * porPagina && idx < pagina * porPagina) ? '' : 'none';
+                fila.style.display = (idx >= (pagina - 1) * pp && idx < pagina * pp) ? '' : 'none';
             });
             cont.innerHTML = '';
             for (var i = 1; i <= total; i++) {
@@ -137,7 +180,22 @@
         }
         render();
     }
-    paginar('histPrestando', 'pagHistPrestando', 2);
-    paginar('histDevueltos', 'pagHistDevueltos', 2);
+
+    function aplicar() {
+        paginar('histPrestando', 'pagHistPrestando');
+        paginar('histDevueltos', 'pagHistDevueltos');
+    }
+    aplicar();
+    if (select) select.addEventListener('change', aplicar);
 })();
+
+function exportarHistorialExcel() {
+    exportMultipleTablesToCSV(['histPrestando', 'histDevueltos'], 'historial_completo.csv');
+}
+function exportarHistorialPDF() {
+    exportMultipleTablesToPDF([
+        { id: 'histPrestando', title: 'Historial - Prestando' },
+        { id: 'histDevueltos', title: 'Historial - Devueltos' }
+    ], 'historial_completo.pdf');
+}
 </script>

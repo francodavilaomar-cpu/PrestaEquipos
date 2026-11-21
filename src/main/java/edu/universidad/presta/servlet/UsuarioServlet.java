@@ -189,9 +189,13 @@ public class UsuarioServlet extends BaseServlet {
     private void crear(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         Map<String, String> f = formDePost(req);
         String clave = raw(req, "password");
+        String nombreDni = p(req, "nombre_dni");
         List<String> errores = new ArrayList<>();
 
         validarDatos(f, errores);
+        if (!nombreDni.isEmpty() && !nombreDni.equals(f.get("nombre"))) {
+            errores.add("El nombre debe corresponder al DNI consultado y no puede modificarse.");
+        }
         if (clave.length() < 8) {
             errores.add("La contraseña debe tener al menos 8 caracteres.");
         }
@@ -319,12 +323,6 @@ public class UsuarioServlet extends BaseServlet {
         Usuario objetivo = UsuarioDao.porId(id);
         if (objetivo == null) {
             flash(req, "El usuario a eliminar no existe.", "danger");
-            redirigir(req, res, "/usuarios/listar");
-            return;
-        }
-
-        if ("admin".equalsIgnoreCase(objetivo.getRol())) {
-            flash(req, "Por seguridad, los usuarios con rol de Administrador no pueden ser eliminados.", "warning");
             redirigir(req, res, "/usuarios/listar");
             return;
         }

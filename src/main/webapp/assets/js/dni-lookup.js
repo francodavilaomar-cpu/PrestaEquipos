@@ -9,12 +9,14 @@
         return {
             inputDni: raiz.querySelector('#dni'),
             inputNombre: raiz.querySelector('#nombre'),
+            inputNombreDni: raiz.querySelector('#nombre_dni'),
             inputEmail: raiz.querySelector('#email'),
             inputCelular: raiz.querySelector('#celular'),
             btnBuscar: raiz.querySelector('#btn-buscar-dni'),
             searchIcon: raiz.querySelector('#dni-search-icon'),
             searchText: raiz.querySelector('#dni-search-text'),
-            feedback: raiz.querySelector('#dni-feedback')
+            feedback: raiz.querySelector('#dni-feedback'),
+            avisoNombre: raiz.querySelector('#nombre-dni-aviso')
         };
     }
 
@@ -44,7 +46,17 @@
             const data = await response.json();
 
             if (response.ok && data.success && data.nombre_completo) {
-                if (el.inputNombre) el.inputNombre.value = data.nombre_completo;
+                if (el.inputNombre) {
+                    el.inputNombre.value = data.nombre_completo;
+                    el.inputNombre.readOnly = true;
+                }
+                if (el.inputNombreDni) {
+                    el.inputNombreDni.value = data.nombre_completo;
+                }
+                if (el.avisoNombre) {
+                    el.avisoNombre.className = 'text-[0.875em] mt-1 text-success font-bold';
+                    el.avisoNombre.textContent = 'Nombre vinculado al DNI: no se puede modificar.';
+                }
 
                 // Generar correo: primer nombre + @universidad.edu
                 let primerNombre = '';
@@ -74,11 +86,17 @@
             } else {
                 el.feedback.className = 'text-[0.875em] mt-1 text-danger';
                 el.feedback.textContent = data.error || 'No se encontraron datos para este DNI.';
+                if (el.inputNombre) el.inputNombre.readOnly = false;
+                if (el.inputNombreDni) el.inputNombreDni.value = '';
+                if (el.avisoNombre) el.avisoNombre.textContent = '';
             }
         } catch (error) {
             console.error('Error al consultar DNI:', error);
             el.feedback.className = 'text-[0.875em] mt-1 text-danger';
             el.feedback.textContent = 'Error de conexión al consultar el DNI. Intente nuevamente.';
+            if (el.inputNombre) el.inputNombre.readOnly = false;
+            if (el.inputNombreDni) el.inputNombreDni.value = '';
+            if (el.avisoNombre) el.avisoNombre.textContent = '';
         } finally {
             el.btnBuscar.disabled = false;
             if (el.searchIcon) el.searchIcon.className = 'ri-search-line';
@@ -111,6 +129,27 @@
         consultarDni(raizDe(input));
     });
 
+    // Evita registrar un usuario con un nombre distinto al obtenido por DNI
+    document.addEventListener('submit', function (event) {
+        const form = event.target;
+        if (!form || !form.querySelector) return;
+        const inputNombre = form.querySelector('#nombre');
+        const inputNombreDni = form.querySelector('#nombre_dni');
+        if (!inputNombre || !inputNombreDni) return;
+        const esperado = inputNombreDni.value.trim();
+        if (esperado && inputNombre.value.trim() !== esperado) {
+            event.preventDefault();
+            event.stopPropagation();
+            inputNombre.value = esperado;
+            inputNombre.readOnly = true;
+            const aviso = form.querySelector('#nombre-dni-aviso');
+            if (aviso) {
+                aviso.className = 'text-[0.875em] mt-1 text-danger font-bold';
+                aviso.textContent = 'El nombre debe corresponder al DNI consultado y no puede modificarse.';
+            }
+        }
+    }, true);
+
     // Consulta automática al completar los 8 dígitos
     document.addEventListener('input', function (event) {
         const input = event.target.closest ? event.target.closest('#dni') : null;
@@ -124,6 +163,11 @@
         }
         el.feedback.className = 'text-[0.875em] mt-1 text-muted';
         el.feedback.textContent = 'Ingrese los 8 dígitos y haga clic en Buscar.';
+        if (input.value.trim().length !== 8) {
+            if (el.inputNombre) el.inputNombre.readOnly = false;
+            if (el.inputNombreDni) el.inputNombreDni.value = '';
+            if (el.avisoNombre) el.avisoNombre.textContent = '';
+        }
         if (input.value.trim().length === 8) {
             consultarDni(raiz);
         }

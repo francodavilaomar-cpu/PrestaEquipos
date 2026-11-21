@@ -281,7 +281,7 @@ public class PrestamoServlet extends BaseServlet {
         Usuario u = usuario(req);
         List<Prestamo> prestamos = PrestamoDao.ultimos(u.getId(), 100);
         req.setAttribute("prestamos", prestamos);
-        render(req, res, "prestamos/mis", "Mis Equipos", "equipos");
+        render(req, res, "prestamos/mis", "Mis Equipos", "mis-equipos");
     }
 
     // ================================================================== activos y vencidos

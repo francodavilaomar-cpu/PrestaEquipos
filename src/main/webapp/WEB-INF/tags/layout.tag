@@ -48,18 +48,18 @@
                         </a>
                     </li>
                     <li>
-                        <a class="${lnk} ${nav == 'equipos' && tabActiva != 'solicitudes' ? lnkOn : ''}" href="${ctx}/equipos/listar">
+                        <a class="${lnk} ${nav == 'equipos' && tabActiva != 'solicitudes' && tabActiva != 'mis_solicitudes' ? lnkOn : ''}" href="${ctx}/equipos/listar">
                             <i class="ri-computer-line shrink-0 text-[1.22rem]"></i> <span>Equipos</span>
                         </a>
                     </li>
                     <c:if test="${not esEncargado}">
                         <li>
-                            <a class="${lnk}" href="${ctx}/equipos/listar?tab=mis_solicitudes">
+                            <a class="${lnk} ${nav == 'equipos' && tabActiva == 'mis_solicitudes' ? lnkOn : ''}" href="${ctx}/equipos/listar?tab=mis_solicitudes">
                                 <i class="ri-time-line shrink-0 text-[1.22rem]"></i> <span>Mis Solicitudes</span>
                             </a>
                         </li>
                         <li>
-                            <a class="${lnk} ${nav == 'equipos' ? '' : ''}" href="${ctx}/prestamos/mis">
+                            <a class="${lnk} ${nav == 'mis-equipos' ? lnkOn : ''}" href="${ctx}/prestamos/mis">
                                 <i class="ri-archive-drawer-line shrink-0 text-[1.22rem]"></i> <span>Mis Equipos</span>
                             </a>
                         </li>
@@ -361,7 +361,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="${ctx}/assets/js/sweetalert-config.js?v=20261113e"></script>
-    <script src="${ctx}/assets/js/script.js?v=20261113e"></script>
+    <script src="${ctx}/assets/js/script.js?v=20261118a"></script>
     <script src="${ctx}/assets/js/modal.js?v=20261113e"></script>
     <script src="${ctx}/assets/js/buscador-select.js?v=20261113e"></script>
     <script src="${ctx}/assets/js/dni-lookup.js?v=20261113e"></script>
