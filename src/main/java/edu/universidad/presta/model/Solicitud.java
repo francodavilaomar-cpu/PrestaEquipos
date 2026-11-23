@@ -17,6 +17,15 @@ public class Solicitud {
     private LocalDateTime fechaSolicitud;
     private String usuarioNombre;
     private String usuarioEmail;
+    private String motivoRechazo;
+
+    public String getMotivoRechazo() {
+        return motivoRechazo;
+    }
+
+    public void setMotivoRechazo(String motivoRechazo) {
+        this.motivoRechazo = motivoRechazo;
+    }
 
     public int getId() {
         return id;

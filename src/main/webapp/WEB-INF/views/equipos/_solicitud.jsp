@@ -25,18 +25,30 @@
 
     <div class="mb-6">
         <label for="oficina" class="form-label text-dark font-bold">Oficina / Unidad Destino *</label>
-        <select class="form-select" id="oficina" name="oficina" required
-                data-buscable data-placeholder="Buscar oficina o área...">
-            <option value="">Seleccionar oficina o área...</option>
-            <c:forEach var="g" items="${gruposOficinas}">
-                <optgroup label="${f:h(g.etiqueta)}">
-                    <c:forEach var="o" items="${g.oficinas}">
-                        <option value="${f:h(o)}">${f:h(o)}</option>
+        <c:choose>
+            <c:when test="${not empty usuarioOficina}">
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-success"><i class="ri-building-line"></i></span>
+                    <input type="text" class="form-control bg-light" value="${f:h(usuarioOficina)}" readonly>
+                    <input type="hidden" id="oficina" name="oficina" value="${f:h(usuarioOficina)}">
+                </div>
+                <div class="form-text text-success font-medium"><i class="ri-checkbox-circle-line me-1"></i>Área / oficina asignada automáticamente según su cuenta.</div>
+            </c:when>
+            <c:otherwise>
+                <select class="form-select" id="oficina" name="oficina" required
+                        data-buscable data-placeholder="Buscar oficina o área...">
+                    <option value="">Seleccionar oficina o área...</option>
+                    <c:forEach var="g" items="${gruposOficinas}">
+                        <optgroup label="${f:h(g.etiqueta)}">
+                            <c:forEach var="o" items="${g.oficinas}">
+                                <option value="${f:h(o)}">${f:h(o)}</option>
+                            </c:forEach>
+                        </optgroup>
                     </c:forEach>
-                </optgroup>
-            </c:forEach>
-        </select>
-        <div class="invalid-feedback">Seleccione la oficina donde se utilizará el equipo.</div>
+                </select>
+                <div class="invalid-feedback">Seleccione la oficina donde se utilizará el equipo.</div>
+            </c:otherwise>
+        </c:choose>
     </div>
 
     <div class="grid grid-cols-12 gap-x-6">

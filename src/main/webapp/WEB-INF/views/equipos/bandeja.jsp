@@ -61,7 +61,19 @@
                                 <div class="text-[0.875em] text-muted font-bold uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">${f:h(sol.area)}</div>
                                 <div class="font-semibold">${f:h(sol.oficina)}</div>
                             </td>
-                            <td><small class="text-muted">${empty sol.observaciones ? '-' : f:h(sol.observaciones)}</small></td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${sol.estado == 'rechazada' and not empty sol.motivoRechazo}">
+                                        <div class="text-danger font-medium"><i class="ri-error-warning-line me-1"></i><strong>Motivo rechazo:</strong> ${f:h(sol.motivoRechazo)}</div>
+                                        <c:if test="${not empty sol.observaciones}">
+                                            <small class="text-muted block mt-1">Obs: ${f:h(sol.observaciones)}</small>
+                                        </c:if>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <small class="text-muted">${empty sol.observaciones ? '-' : f:h(sol.observaciones)}</small>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
                             <td>
                                 <c:choose>
                                     <c:when test="${sol.estado == 'aprobada'}">

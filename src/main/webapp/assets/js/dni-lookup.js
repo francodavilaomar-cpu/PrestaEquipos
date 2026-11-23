@@ -12,6 +12,8 @@
             inputNombreDni: raiz.querySelector('#nombre_dni'),
             inputEmail: raiz.querySelector('#email'),
             inputCelular: raiz.querySelector('#celular'),
+            inputPassword: raiz.querySelector('#password'),
+            inputPasswordConfirm: raiz.querySelector('#password_confirm'),
             btnBuscar: raiz.querySelector('#btn-buscar-dni'),
             searchIcon: raiz.querySelector('#dni-search-icon'),
             searchText: raiz.querySelector('#dni-search-text'),
@@ -76,6 +78,31 @@
                     }
                 }
 
+                // Autogenerar contraseña: Inicial del nombre en mayúscula + DNI (ej: A71234567)
+                let inicialNombre = '';
+                if (primerNombre) {
+                    inicialNombre = primerNombre.charAt(0).toUpperCase();
+                } else if (data.nombre_completo) {
+                    inicialNombre = data.nombre_completo.trim().charAt(0).toUpperCase();
+                }
+                if (inicialNombre && dni) {
+                    const claveGenerada = inicialNombre + dni;
+                    const passInput = el.inputPassword || document.querySelector('#password');
+                    const passConfInput = el.inputPasswordConfirm || document.querySelector('#password_confirm');
+                    if (passInput) {
+                        passInput.value = claveGenerada;
+                        passInput.setAttribute('value', claveGenerada);
+                        passInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        passInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                    if (passConfInput) {
+                        passConfInput.value = claveGenerada;
+                        passConfInput.setAttribute('value', claveGenerada);
+                        passConfInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        passConfInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+
                 el.feedback.className = 'text-[0.875em] mt-1 text-success font-bold';
                 el.feedback.textContent = '✓ Datos encontrados y autocompletados con éxito.';
 
@@ -84,17 +111,23 @@
                     el.inputCelular.focus();
                 }
             } else {
-                el.feedback.className = 'text-[0.875em] mt-1 text-danger';
-                el.feedback.textContent = data.error || 'No se encontraron datos para este DNI.';
-                if (el.inputNombre) el.inputNombre.readOnly = false;
+                el.feedback.className = 'text-[0.875em] mt-1 text-warning font-semibold';
+                el.feedback.innerHTML = '<i class="ri-information-line me-1"></i>No se encontró automáticamente en RENIEC. Ingrese el nombre manualmente.';
+                if (el.inputNombre) {
+                    el.inputNombre.readOnly = false;
+                    el.inputNombre.focus();
+                }
                 if (el.inputNombreDni) el.inputNombreDni.value = '';
                 if (el.avisoNombre) el.avisoNombre.textContent = '';
             }
         } catch (error) {
             console.error('Error al consultar DNI:', error);
-            el.feedback.className = 'text-[0.875em] mt-1 text-danger';
-            el.feedback.textContent = 'Error de conexión al consultar el DNI. Intente nuevamente.';
-            if (el.inputNombre) el.inputNombre.readOnly = false;
+            el.feedback.className = 'text-[0.875em] mt-1 text-warning font-semibold';
+            el.feedback.innerHTML = '<i class="ri-wifi-off-line me-1"></i>Servicio RENIEC no disponible. Ingrese el nombre manualmente.';
+            if (el.inputNombre) {
+                el.inputNombre.readOnly = false;
+                el.inputNombre.focus();
+            }
             if (el.inputNombreDni) el.inputNombreDni.value = '';
             if (el.avisoNombre) el.avisoNombre.textContent = '';
         } finally {
@@ -170,6 +203,131 @@
         }
         if (input.value.trim().length === 8) {
             consultarDni(raiz);
+        }
+    });
+
+    // Actualizar contraseña automáticamente si el usuario escribe o edita el nombre a mano
+    document.addEventListener('input', function (event) {
+        const input = event.target.closest ? event.target.closest('#nombre, #dni') : null;
+        if (!input) return;
+        const form = input.closest('form');
+        if (!form) return;
+        const el = elementos(form);
+        if (!el.inputPassword || !el.inputPasswordConfirm) return;
+
+        const dniVal = el.inputDni ? el.inputDni.value.trim() : '';
+        const nombreVal = el.inputNombre ? el.inputNombre.value.trim() : '';
+
+        if (dniVal && nombreVal) {
+            const inicial = nombreVal.charAt(0).toUpperCase();
+            if (/[A-ZÁÉÍÓÚÑ]/.test(inicial)) {
+                const autogen = inicial + dniVal;
+                if (!el.inputPassword.dataset.manualEdited) {
+                    el.inputPassword.value = autogen;
+                    el.inputPassword.setAttribute('value', autogen);
+                    el.inputPassword.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                if (!el.inputPasswordConfirm.dataset.manualEdited) {
+                    el.inputPasswordConfirm.value = autogen;
+                    el.inputPasswordConfirm.setAttribute('value', autogen);
+                    el.inputPasswordConfirm.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        }
+    });
+
+    // Si el usuario edita la contraseña manualmente, respetar su valor
+    document.addEventListener('input', function (event) {
+        const pass = event.target.closest ? event.target.closest('#password') : null;
+        if (pass) {
+            pass.dataset.manualEdited = 'true';
+        }
+    });
+
+    // Enviar credenciales por WhatsApp o Correo / Gmail
+    function obtenerCredenciales(form) {
+        const el = elementos(form);
+        const nombre = el.inputNombre ? el.inputNombre.value.trim() : '';
+        const email = el.inputEmail ? el.inputEmail.value.trim() : '';
+        const celular = el.inputCelular ? el.inputCelular.value.trim() : '';
+        const dni = el.inputDni ? el.inputDni.value.trim() : '';
+
+        // En creación es #password, en edición puede ser #nuevo_password
+        const inputNuevoPass = form.querySelector('#nuevo_password');
+        let password = '';
+        if (el.inputPassword && el.inputPassword.value.trim()) {
+            password = el.inputPassword.value.trim();
+        } else if (inputNuevoPass && inputNuevoPass.value.trim()) {
+            password = inputNuevoPass.value.trim();
+        } else if (nombre && dni) {
+            // Si está en edición y no cambió contraseña, deducir la clave por defecto
+            const inicial = nombre.charAt(0).toUpperCase();
+            password = inicial + dni;
+        }
+
+        return { nombre, email, celular, password, dni };
+    }
+
+    document.addEventListener('click', function (event) {
+        const btnWa = event.target.closest ? event.target.closest('#btn-enviar-whatsapp') : null;
+        const btnMail = event.target.closest ? event.target.closest('#btn-enviar-email') : null;
+
+        if (!btnWa && !btnMail) return;
+
+        const form = (btnWa || btnMail).closest('form') || document.querySelector('form');
+        const c = obtenerCredenciales(form);
+
+        if (!c.email || !c.password) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Faltan datos',
+                    text: 'Debe ingresar o autocompletar el DNI y la contraseña antes de enviar.',
+                    confirmButtonColor: '#004d3d'
+                });
+            } else {
+                alert('Debe ingresar el correo y la contraseña antes de enviar.');
+            }
+            return;
+        }
+
+        const mensaje = '¡Hola ' + (c.nombre || 'Usuario') + '! 🎓\n\n'
+            + 'Se ha creado tu cuenta en el *Sistema de Préstamos de Equipos - UNCP*.\n\n'
+            + 'Tus credenciales de acceso son:\n'
+            + '👤 *Usuario / Correo:* ' + c.email + '\n'
+            + '🔑 *Contraseña:* ' + c.password + '\n\n'
+            + 'Puedes acceder al sistema desde el enlace de la universidad.';
+
+        if (btnWa) {
+            let cel = c.celular.replace(/[^0-9]/g, '');
+            if (!cel) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Sin celular registrado',
+                        text: 'Ingresa un número de celular de 9 dígitos en el formulario para abrir la conversación directamente.',
+                        confirmButtonColor: '#004d3d'
+                    });
+                }
+                return;
+            }
+            // Si es número peruano de 9 dígitos sin código de país, anteponer 51
+            if (cel.length === 9) {
+                cel = '51' + cel;
+            }
+            const waUrl = 'https://api.whatsapp.com/send?phone=' + cel + '&text=' + encodeURIComponent(mensaje);
+            window.open(waUrl, '_blank');
+        } else if (btnMail) {
+            const asunto = 'Credenciales de Acceso - Sistema de Préstamos de Equipos UNCP';
+            const cuerpoMail = mensaje.replace(/\*/g, ''); // Quitar negritas de WhatsApp para el correo
+            // Si es Gmail web directo
+            const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(c.email) + '&su=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpoMail);
+            
+            // Intentar abrir Gmail web, con fallback a mailto
+            const win = window.open(gmailUrl, '_blank');
+            if (!win) {
+                window.location.href = 'mailto:' + encodeURIComponent(c.email) + '?subject=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpoMail);
+            }
         }
     });
 })();

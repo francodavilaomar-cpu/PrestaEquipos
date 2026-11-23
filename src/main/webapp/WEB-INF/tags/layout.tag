@@ -77,6 +77,11 @@
                                 <i class="ri-group-line shrink-0 text-[1.22rem]"></i> <span>Usuarios</span>
                             </a>
                         </li>
+                        <li>
+                            <a class="${lnk} ${nav == 'oficinas' ? lnkOn : ''}" href="${ctx}/oficinas/listar">
+                                <i class="ri-building-4-line shrink-0 text-[1.22rem]"></i> <span>Oficinas / Áreas</span>
+                            </a>
+                        </li>
                     </c:if>
                     <c:if test="${esEncargado}">
                         <li>
@@ -350,7 +355,7 @@
     <script src="${ctx}/assets/js/script.js?v=20261118a"></script>
     <script src="${ctx}/assets/js/modal.js?v=20261113e"></script>
     <script src="${ctx}/assets/js/buscador-select.js?v=20261113e"></script>
-    <script src="${ctx}/assets/js/dni-lookup.js?v=20261113e"></script>
+    <script src="${ctx}/assets/js/dni-lookup.js?v=20261123g"></script>
     <script src="${ctx}/assets/js/prestamo-usuarios.js?v=20261113e"></script>
     <script src="${ctx}/assets/js/notificaciones.js?v=20261113e"></script>
     <script src="${ctx}/assets/js/asistente-ia.js?v=20261114a"></script>

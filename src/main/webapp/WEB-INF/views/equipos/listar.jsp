@@ -350,6 +350,9 @@
                                                 </c:when>
                                                 <c:when test="${sol.estado == 'rechazada'}">
                                                     <span class="badge badge-vencido"><i class="ri-close-circle-fill"></i> Rechazada</span>
+                                                    <c:if test="${not empty sol.motivoRechazo}">
+                                                        <small class="block text-danger mt-1" style="font-size:0.75rem;"><i class="ri-information-line"></i> Motivo: ${f:h(sol.motivoRechazo)}</small>
+                                                    </c:if>
                                                 </c:when>
                                                 <c:when test="${sol.estado == 'devuelta'}">
                                                     <span class="badge badge-disponible"><i class="ri-arrow-go-back-line"></i> Devuelta</span>
@@ -1073,6 +1076,70 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Solicitudes Rechazadas o Atendidas -->
+            <div class="card shadow-sm border-0 mb-6">
+                <div class="card-header bg-white py-4 px-6 flex flex-wrap justify-between items-center gap-2">
+                    <h6 class="mb-0 text-dark font-bold"><i class="ri-history-line me-2 text-info text-xl"></i> Historial de Solicitudes (Aprobadas / Rechazadas)</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="tablaMisSolicitudesHistorial">
+                            <thead>
+                                <tr>
+                                    <th class="ps-6">Equipo Solicitado</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Oficina Destino</th>
+                                    <th>Estado</th>
+                                    <th>Motivo / Observación</th>
+                                    <th class="col-boleta pe-6">Boleta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:set var="hayHist" value="false"/>
+                                <c:forEach var="ms" items="${misSolicitudes}">
+                                    <c:if test="${ms.estado ne 'pendiente'}">
+                                        <c:set var="hayHist" value="true"/>
+                                        <tr>
+                                            <td class="ps-6 font-bold">${f:h(ms.equipoSolicitado)}</td>
+                                            <td>${f:fecha(ms.fechaSolicitud, 'dd/MM/yyyy HH:mm')}</td>
+                                            <td>${f:h(ms.oficina)}</td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${ms.estado == 'aprobada'}">
+                                                        <span class="badge badge-disponible"><i class="ri-checkbox-circle-fill"></i> Aprobada</span>
+                                                    </c:when>
+                                                    <c:when test="${ms.estado == 'rechazada'}">
+                                                        <span class="badge badge-vencido"><i class="ri-close-circle-fill"></i> Rechazada</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge badge-prestado">${f:cap(ms.estado)}</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${ms.estado == 'rechazada' and not empty ms.motivoRechazo}">
+                                                        <span class="text-danger font-semibold"><i class="ri-error-warning-line"></i> ${f:h(ms.motivoRechazo)}</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <small class="text-muted">${empty ms.observaciones ? '-' : f:h(ms.observaciones)}</small>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td class="col-boleta pe-6"><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirBoleta('solicitud', ${ms.id})" title="Ver boleta"><i class="ri-file-text-line me-1"></i> Boleta</button></td>
+                                        </tr>
+                                    </c:if>
+                                </c:forEach>
+                                <c:if test="${!hayHist}">
+                                    <tr><td colspan="6" class="text-center text-muted py-8">No tienes solicitudes en el historial.</td></tr>
+                                </c:if>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
 
 
             <script>

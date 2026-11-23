@@ -1,0 +1,351 @@
+/* ==============================================================
+   ESTILOS DE AUTENTICACIÓN — UNCP
+   Identidad Oficial: Verde UNCP (#009B4B), Verde Bosque (#005C2B), Dorado (#CC9933)
+   Diseño ultra-moderno con Glassmorphism y micro-interacciones
+   ============================================================== */
+
+:root {
+    --uncp-green: #009B4B;
+    --uncp-green-dark: #005C2B;
+    --uncp-green-deep: #00381A;
+    --uncp-green-light: #05C260;
+    --uncp-gold: #CC9933;
+    --uncp-gold-light: #E5B350;
+    --login-primary: var(--uncp-green);
+    --login-primary-hover: var(--uncp-green-dark);
+    --login-accent: var(--uncp-gold);
+    --login-dark: #0F172A;
+    --login-muted: #64748B;
+    --login-border: #E2E8F0;
+    --login-bg: #F8FAFC;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: var(--login-bg);
+    color: #1E293B;
+}
+
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+}
+
+/* Columna izquierda: Hero Universitario UNCP */
+.login-hero {
+    flex: 1 1 50%;
+    position: relative;
+    background: #00381A url('../img/uncp-campus.jpg') center center / cover no-repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 3.5rem 4rem;
+    color: #ffffff;
+    overflow: hidden;
+}
+
+/* Gradiente institucional Verde UNCP translúcido */
+.login-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, 
+        rgba(0, 56, 26, 0.94) 0%, 
+        rgba(0, 92, 43, 0.88) 50%, 
+        rgba(0, 155, 75, 0.92) 100%);
+    z-index: 1;
+}
+
+/* Patrón sutil decorativo */
+.login-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(204, 153, 51, 0.22) 1px, transparent 1px);
+    background-size: 28px 28px;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.login-hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Insignia UNCP oficial */
+.brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.1rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 0.65rem 1.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.brand-badge {
+    background: linear-gradient(135deg, var(--uncp-gold) 0%, #A8761E 100%);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font-weight: 800;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    color: #002B13;
+    box-shadow: 0 4px 12px rgba(204, 153, 51, 0.35);
+}
+
+.brand-text-sub {
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.brand-text-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.2;
+}
+
+/* Titular */
+.hero-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+    font-size: 3.1rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 1.4rem;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.hero-description {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 480px;
+    margin-bottom: 2.2rem;
+}
+
+/* Lista de ventajas / características */
+.hero-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.hero-features li {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.hero-features li i {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(204, 153, 51, 0.25);
+    border: 1px solid var(--uncp-gold);
+    color: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.hero-footer {
+    position: relative;
+    z-index: 2;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Columna derecha: formulario */
+.login-form-pane {
+    flex: 1 1 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem;
+    background: #ffffff;
+    position: relative;
+}
+
+.login-card-inner {
+    width: 100%;
+    max-width: 430px;
+    animation: fadeInForm 0.6s ease-out;
+}
+
+@keyframes fadeInForm {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-heading-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--uncp-green-deep);
+    letter-spacing: -0.5px;
+    margin-bottom: 0.5rem;
+}
+
+.form-heading-sub {
+    font-size: 0.92rem;
+    color: var(--login-muted);
+    margin: 0;
+}
+
+.form-label-custom {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.45rem;
+}
+
+.input-group-custom {
+    border: 1.5px solid var(--login-border);
+    border-radius: 12px;
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    background-color: #F8FAFC;
+    overflow: hidden;
+}
+
+.input-group-custom:focus-within {
+    border-color: var(--uncp-green);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 4px rgba(0, 155, 75, 0.14);
+}
+
+.input-group-custom .input-group-text {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    padding: 0.75rem 0.9rem;
+    font-size: 1.1rem;
+}
+
+.input-group-custom:focus-within .input-group-text {
+    color: var(--uncp-green);
+}
+
+.input-group-custom .form-control {
+    border: none;
+    background: transparent;
+    padding: 0.75rem 0.75rem 0.75rem 0;
+    font-size: 0.95rem;
+    color: #0F172A;
+    box-shadow: none;
+}
+
+.input-group-custom .form-control:focus {
+    box-shadow: none;
+}
+
+.btn-toggle-pwd {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: color 0.2s ease;
+}
+
+.btn-toggle-pwd:hover {
+    color: var(--uncp-green);
+}
+
+/* Botón principal de login */
+.btn-login-submit {
+    background: linear-gradient(135deg, var(--uncp-green) 0%, var(--uncp-green-dark) 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 0.85rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.8rem;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 6px 18px rgba(0, 155, 75, 0.28);
+}
+
+.btn-login-submit:hover {
+    background: linear-gradient(135deg, var(--uncp-green-light) 0%, var(--uncp-green) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0, 155, 75, 0.35);
+    color: #ffffff;
+}
+
+.btn-login-submit:active {
+    transform: translateY(0);
+}
+
+.login-help-link {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.88rem;
+    color: var(--login-muted);
+}
+
+.login-help-link a {
+    color: var(--uncp-green);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 0.35rem;
+    transition: color 0.2s ease;
+}
+
+.login-help-link a:hover {
+    color: var(--uncp-green-dark);
+    text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .login-wrapper {
+        flex-direction: column;
+    }
+    .login-hero {
+        padding: 2.5rem 2rem;
+        flex: none;
+    }
+    .hero-title {
+        font-size: 2.2rem;
+    }
+    .login-form-pane {
+        padding: 2.5rem 1.5rem;
+        flex: 1;
+    }
+}

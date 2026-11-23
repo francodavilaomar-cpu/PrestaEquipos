@@ -3,6 +3,7 @@ package edu.universidad.presta.util;
 import edu.universidad.presta.model.EstadoInfo;
 import edu.universidad.presta.model.GrupoOficinas;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -77,8 +78,39 @@ public final class Oficinas {
     private Oficinas() {
     }
 
+    /** Devuelve la lista dinámica de grupos con sus oficinas registradas en la base de datos. */
+    public static List<GrupoOficinas> gruposDinamicos() {
+        try {
+            List<edu.universidad.presta.model.Oficina> oficinas = edu.universidad.presta.dao.OficinaDao.listarActivas();
+            if (oficinas.isEmpty()) {
+                return GRUPOS;
+            }
+            Map<String, List<String>> porGrupo = new LinkedHashMap<>();
+            for (edu.universidad.presta.model.Oficina o : oficinas) {
+                String grp = (o.getGrupo() != null && !o.getGrupo().trim().isEmpty()) ? o.getGrupo().trim() : "General";
+                porGrupo.computeIfAbsent(grp, k -> new ArrayList<>()).add(o.getNombre());
+            }
+            List<GrupoOficinas> lista = new ArrayList<>();
+            for (Map.Entry<String, List<String>> e : porGrupo.entrySet()) {
+                lista.add(new GrupoOficinas(e.getKey(), e.getKey(), Collections.unmodifiableList(e.getValue())));
+            }
+            return Collections.unmodifiableList(lista);
+        } catch (Exception e) {
+            return GRUPOS;
+        }
+    }
+
     /** Área a la que pertenece una oficina ("Otra Categoría" si no está en el catálogo). */
     public static String area(String oficina) {
+        if (oficina == null || oficina.trim().isEmpty()) {
+            return "General";
+        }
+        try {
+            edu.universidad.presta.model.Oficina o = edu.universidad.presta.dao.OficinaDao.porNombre(oficina.trim());
+            if (o != null && o.getGrupo() != null && !o.getGrupo().trim().isEmpty()) {
+                return o.getGrupo();
+            }
+        } catch (Exception ignored) {}
         for (GrupoOficinas g : GRUPOS) {
             if (g.getOficinas().contains(oficina)) {
                 return g.getArea();

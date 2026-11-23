@@ -23,6 +23,9 @@ public final class SolicitudDao {
         s.setOficina(rs.getString("oficina"));
         s.setEstado(rs.getString("estado"));
         s.setObservaciones(rs.getString("observaciones"));
+        if (Db.has(rs, "motivo_rechazo")) {
+            s.setMotivoRechazo(rs.getString("motivo_rechazo"));
+        }
         s.setFechaSolicitud(Db.dt(rs, "fecha_solicitud"));
         if (Db.has(rs, "usuario_nombre")) {
             s.setUsuarioNombre(rs.getString("usuario_nombre"));
@@ -56,6 +59,14 @@ public final class SolicitudDao {
         return Db.scalar("SELECT COUNT(*) FROM solicitudes WHERE estado = 'pendiente'");
     }
 
+    public static boolean tieneSolicitudActivaDelEquipo(int usuarioId, String equipo) {
+        if (equipo == null || equipo.trim().isEmpty()) return false;
+        long total = Db.scalar("SELECT COUNT(*) FROM solicitudes WHERE usuario_id = ? AND estado IN ('pendiente', 'aprobada', 'prestado') "
+                + "AND (LOWER(equipo_solicitado) = LOWER(?) OR equipo_solicitado LIKE ?)",
+                usuarioId, equipo.trim(), "%" + equipo.trim() + "%");
+        return total > 0;
+    }
+
     public static List<Solicitud> recientesDe(int usuarioId, int limite) {
         return Db.list("SELECT TOP (" + limite + ") * FROM solicitudes WHERE usuario_id = ? ORDER BY fecha_solicitud DESC",
                 SolicitudDao::map, usuarioId);
@@ -63,6 +74,10 @@ public final class SolicitudDao {
 
     public static void setEstado(int id, String estado) {
         Db.update("UPDATE solicitudes SET estado = ? WHERE id = ?", estado, id);
+    }
+
+    public static void rechazar(int id, String motivo) {
+        Db.update("UPDATE solicitudes SET estado = 'rechazada', motivo_rechazo = ? WHERE id = ?", motivo, id);
     }
 
     /** Elimina una solicitud de la bandeja por su ID. */

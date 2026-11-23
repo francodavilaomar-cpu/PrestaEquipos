@@ -39,6 +39,28 @@ public final class EquipoDao {
         return Db.one("SELECT * FROM equipos WHERE id = ?", EquipoDao::map, id);
     }
 
+    public static Equipo porCodigoOParte(String texto) {
+        if (texto == null || texto.trim().isEmpty()) return null;
+        String t = texto.trim();
+        // 1. Coincidencia exacta por código
+        Equipo eq = Db.one("SELECT TOP 1 * FROM equipos WHERE LOWER(codigo_inventario) = LOWER(?)", EquipoDao::map, t);
+        if (eq != null) return eq;
+        // 2. Coincidencia si el texto contiene el código entre paréntesis (ej: "Laptop HP (LPT-001)")
+        int ini = t.lastIndexOf('(');
+        int fin = t.lastIndexOf(')');
+        if (ini >= 0 && fin > ini) {
+            String codigo = t.substring(ini + 1, fin).trim();
+            eq = Db.one("SELECT TOP 1 * FROM equipos WHERE LOWER(codigo_inventario) = LOWER(?)", EquipoDao::map, codigo);
+            if (eq != null) return eq;
+        }
+        // 3. Coincidencia por nombre exacto
+        eq = Db.one("SELECT TOP 1 * FROM equipos WHERE LOWER(nombre) = LOWER(?)", EquipoDao::map, t);
+        if (eq != null) return eq;
+        // 4. Coincidencia parcial
+        return Db.one("SELECT TOP 1 * FROM equipos WHERE LOWER(codigo_inventario) LIKE LOWER(?) OR LOWER(nombre) LIKE LOWER(?)",
+                EquipoDao::map, "%" + t + "%", "%" + t + "%");
+    }
+
     /** Lee y bloquea la fila dentro de una transacción. */
     public static Equipo porIdBloqueado(Connection c, int id) {
         return Db.one(c, "SELECT * FROM equipos WITH (UPDLOCK, ROWLOCK) WHERE id = ?", EquipoDao::map, id);

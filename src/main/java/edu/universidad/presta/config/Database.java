@@ -64,7 +64,15 @@ public final class Database {
             + " fecha DATETIME2(0) NOT NULL CONSTRAINT df_ia_mensajes_fecha DEFAULT SYSDATETIME(),"
             + " CONSTRAINT ck_ia_mensajes_rol CHECK (rol IN ('user','assistant')) ,"
             + " CONSTRAINT fk_ia_mensajes_conversacion FOREIGN KEY (conversacion_id) REFERENCES dbo.ia_conversaciones(id) ON DELETE CASCADE)",
-        "IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='ix_ia_mensajes_conversacion') CREATE INDEX ix_ia_mensajes_conversacion ON dbo.ia_mensajes(conversacion_id, id DESC)"
+        "IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name='ix_ia_mensajes_conversacion') CREATE INDEX ix_ia_mensajes_conversacion ON dbo.ia_mensajes(conversacion_id, id DESC)",
+        "IF COL_LENGTH('dbo.solicitudes', 'motivo_rechazo') IS NULL ALTER TABLE dbo.solicitudes ADD motivo_rechazo NVARCHAR(MAX) NULL",
+        "IF COL_LENGTH('dbo.usuarios', 'oficina') IS NULL ALTER TABLE dbo.usuarios ADD oficina NVARCHAR(150) NULL",
+        "IF OBJECT_ID(N'dbo.oficinas', N'U') IS NULL CREATE TABLE dbo.oficinas ("
+            + " id INT IDENTITY(1,1) NOT NULL CONSTRAINT pk_oficinas PRIMARY KEY,"
+            + " nombre NVARCHAR(150) NOT NULL CONSTRAINT uq_oficinas_nombre UNIQUE,"
+            + " grupo NVARCHAR(100) NULL, descripcion NVARCHAR(255) NULL,"
+            + " activo BIT NOT NULL CONSTRAINT df_oficinas_activo DEFAULT 1,"
+            + " fecha_registro DATETIME2(0) NOT NULL CONSTRAINT df_oficinas_fecha DEFAULT SYSDATETIME())"
     };
 
     private Database() {
