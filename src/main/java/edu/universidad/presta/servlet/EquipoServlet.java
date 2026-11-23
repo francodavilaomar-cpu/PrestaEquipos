@@ -150,6 +150,7 @@ public class EquipoServlet extends BaseServlet {
             req.setAttribute("solicitudesRegistrables", registrables);
         } else {
             req.setAttribute("misSolicitudes", SolicitudDao.deUsuario(usuario(req).getId()));
+            req.setAttribute("misPrestamos", PrestamoDao.ultimos(usuario(req).getId(), 100));
             req.setAttribute("equiposCatalogo", EquipoDao.catalogo());
             req.setAttribute("categoriasCatalogo", CategoriaDao.resumenCatalogo());
             req.setAttribute("equiposDisponibles", EquipoDao.disponibles());
@@ -183,6 +184,7 @@ public class EquipoServlet extends BaseServlet {
         req.setAttribute("solicitudesRegistrables", registrables);
         req.setAttribute("pageTitle", "Bandeja de Solicitudes");
         req.setAttribute("nav", "equipos");
+        req.setAttribute("tabActiva", "solicitudes");
         render(req, res, "equipos/bandeja", "Bandeja de Solicitudes", "equipos");
     }
 
@@ -235,15 +237,31 @@ public class EquipoServlet extends BaseServlet {
             LocalDateTime fd = Fechas.parse(fechaDevolucion);
             if (fp == null || fd == null) {
                 errores.add("Las fechas de la solicitud no son válidas.");
+            } else if (fd.isBefore(fp)) {
+                errores.add("La fecha de devolución no puede ser anterior a la fecha de préstamo.");
             } else {
-                SolicitudDao.crear(usuario(req).getId(), equipo, fp, fd, oficina, observaciones);
-                flash(req, "Solicitud enviada exitosamente al panel de administración.", "success");
-                if (esAjax(req)) {
-                    responderJson(res, true, "Solicitud enviada exitosamente al panel de administración.", new ArrayList<>());
+                int uid = usuario(req).getId();
+                // Validar si el usuario ya tiene este equipo en préstamo activo o solicitud pendiente
+                if (SolicitudDao.tieneSolicitudActivaDelEquipo(uid, equipo)) {
+                    errores.add("Ya tienes una solicitud pendiente o aprobada para este equipo. No puedes solicitar el mismo equipo nuevamente.");
+                } else {
+                    // Validar si el equipo físico está marcado como no disponible (prestado, mantenimiento o baja)
+                    edu.universidad.presta.model.Equipo eqFisico = EquipoDao.porCodigoOParte(equipo);
+                    if (eqFisico != null && !"disponible".equalsIgnoreCase(eqFisico.getEstado())) {
+                        errores.add("El equipo '" + eqFisico.getNombre() + "' (" + eqFisico.getCodigoInventario() + ") actualmente se encuentra en estado '" + eqFisico.getEstado() + "' y ya está en uso. Por favor elija otro equipo.");
+                    }
+                }
+
+                if (errores.isEmpty()) {
+                    SolicitudDao.crear(uid, equipo, fp, fd, oficina, observaciones);
+                    flash(req, "Solicitud enviada exitosamente al panel de administración.", "success");
+                    if (esAjax(req)) {
+                        responderJson(res, true, "Solicitud enviada exitosamente al panel de administración.", new ArrayList<>());
+                        return;
+                    }
+                    redirigir(req, res, "/equipos/listar?tab=mis_solicitudes");
                     return;
                 }
-                redirigir(req, res, "/equipos/listar?tab=mis_solicitudes");
-                return;
             }
         }
         if (esAjax(req)) {
@@ -257,11 +275,13 @@ public class EquipoServlet extends BaseServlet {
     /** Fragmento del formulario de solicitud de equipo (se usa dentro del modal del panel). */
     private void formularioSolicitud(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
-        req.setAttribute("gruposOficinas", Oficinas.GRUPOS);
+        req.setAttribute("gruposOficinas", Oficinas.gruposDinamicos());
         req.setAttribute("equiposDisponibles", EquipoDao.disponibles());
         req.setAttribute("ahoraInput", Fechas.input(Fechas.ahora()));
         req.setAttribute("minPrestamo", Fechas.input(Fechas.hoy().atStartOfDay()));
         req.setAttribute("busqueda", p(req, "busqueda"));
+        edu.universidad.presta.model.Usuario u = usuario(req);
+        req.setAttribute("usuarioOficina", u != null && u.getOficina() != null ? u.getOficina() : "");
         if (esModal(req)) {
             renderFragmento(req, res, "equipos/_solicitud");
             return;
@@ -276,8 +296,12 @@ public class EquipoServlet extends BaseServlet {
                 SolicitudDao.setEstado(id, "aprobada");
                 flash(req, "Solicitud aprobada correctamente.", "success");
             } else {
-                SolicitudDao.setEstado(id, "rechazada");
-                flash(req, "Solicitud rechazada.", "warning");
+                String motivo = p(req, "motivo_rechazo");
+                if (motivo.isEmpty()) {
+                    motivo = p(req, "motivo");
+                }
+                SolicitudDao.rechazar(id, motivo);
+                flash(req, "Solicitud rechazada correctamente.", "warning");
             }
         }
         redirigir(req, res, esBandeja(req) ? "/equipos/bandeja" : "/equipos/listar?tab=solicitudes");

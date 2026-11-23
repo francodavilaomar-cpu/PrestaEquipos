@@ -12,8 +12,17 @@ public class Usuario {
     private String email;
     private String passwordHash;
     private String rol;
+    private String oficina;
     private int estado;
     private LocalDateTime fechaRegistro;
+
+    public String getOficina() {
+        return oficina;
+    }
+
+    public void setOficina(String oficina) {
+        this.oficina = oficina;
+    }
 
     public int getId() {
         return id;

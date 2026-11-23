@@ -9,7 +9,7 @@ services:
       PRESTAMOS_DB_HOST: host.docker.internal
       PRESTAMOS_DB_PORT: 1433
       PRESTAMOS_DB_NAME: prestamos_equipos
-      PRESTAMOS_DB_USER: sa
+      PRESTAMOS_DB_USER: superadmin
       PRESTAMOS_DB_PASS: ${DB_SA_PASSWORD}
       PRESTAMOS_DB_TRUST_CERT: "true"
       PRESTAMOS_AI_API_KEY: ${PRESTAMOS_AI_API_KEY:-}

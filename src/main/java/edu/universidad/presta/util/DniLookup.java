@@ -49,7 +49,21 @@ public final class DniLookup {
             p = consultar("https://api.decolecta.com/v1/reniec/dni?numero=" + codificar(dni), token, 5);
         }
         if (p == null) {
-            p = consultar("https://api.apis.net.pe/v1/dni?numero=" + codificar(dni), null, 6);
+            // Reintento con backoff en caso de saturación temporal (rate limit 429)
+            for (int intento = 1; intento <= 3; intento++) {
+                p = consultar("https://api.apis.net.pe/v1/dni?numero=" + codificar(dni), null, 6);
+                if (p != null) {
+                    break;
+                }
+                if (intento < 3) {
+                    try {
+                        Thread.sleep(800L * intento);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+            }
         }
         return p;
     }

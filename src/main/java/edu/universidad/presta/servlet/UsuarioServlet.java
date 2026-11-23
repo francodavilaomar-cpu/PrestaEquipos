@@ -125,6 +125,8 @@ public class UsuarioServlet extends BaseServlet {
         req.setAttribute("usuario", usuario);
         req.setAttribute("form", form);
         req.setAttribute("errores", errores);
+        req.setAttribute("oficinasDisponibles", edu.universidad.presta.dao.OficinaDao.listarActivas());
+        req.setAttribute("gruposOficinas", edu.universidad.presta.util.Oficinas.gruposDinamicos());
         if (esModal(req)) {
             renderFragmento(req, res, "usuarios/_form");
             return;
@@ -139,6 +141,7 @@ public class UsuarioServlet extends BaseServlet {
         f.put("celular", "");
         f.put("email", "");
         f.put("rol", "usuario");
+        f.put("oficina", "");
         return f;
     }
 
@@ -149,6 +152,7 @@ public class UsuarioServlet extends BaseServlet {
         f.put("celular", u.getCelular() == null ? "" : u.getCelular());
         f.put("email", u.getEmail());
         f.put("rol", u.getRol());
+        f.put("oficina", u.getOficina() == null ? "" : u.getOficina());
         return f;
     }
 
@@ -159,6 +163,7 @@ public class UsuarioServlet extends BaseServlet {
         f.put("celular", p(req, "celular"));
         f.put("email", p(req, "email"));
         f.put("rol", ROLES.contains(p(req, "rol")) ? p(req, "rol") : "usuario");
+        f.put("oficina", p(req, "oficina"));
         return f;
     }
 
@@ -189,11 +194,16 @@ public class UsuarioServlet extends BaseServlet {
     private void crear(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         Map<String, String> f = formDePost(req);
         String clave = raw(req, "password");
+        String nombreDni = p(req, "nombre_dni");
         List<String> errores = new ArrayList<>();
 
         validarDatos(f, errores);
-        if (clave.length() < 8) {
-            errores.add("La contraseña debe tener al menos 8 caracteres.");
+        if (!nombreDni.isEmpty() && !nombreDni.equals(f.get("nombre"))) {
+            errores.add("El nombre debe corresponder al DNI consultado y no puede modificarse.");
+        }
+        String errorClave = Seguridad.validarFortaleza(clave);
+        if (errorClave != null) {
+            errores.add(errorClave);
         }
         if (!clave.equals(raw(req, "password_confirm"))) {
             errores.add("Las contraseñas no coinciden.");
@@ -206,7 +216,7 @@ public class UsuarioServlet extends BaseServlet {
                 errores.add("El email ya está registrado.");
             }
             if (errores.isEmpty()) {
-                UsuarioDao.crear(f.get("nombre"), f.get("dni"), f.get("celular"), f.get("email"), Seguridad.hash(clave), f.get("rol"));
+                UsuarioDao.crear(f.get("nombre"), f.get("dni"), f.get("celular"), f.get("email"), Seguridad.hash(clave), f.get("rol"), f.get("oficina"));
                 flash(req, "Usuario creado exitosamente.", "success");
                 if (esAjax(req)) {
                     responderJson(res, true, "Usuario creado exitosamente.", new ArrayList<>());
@@ -252,12 +262,15 @@ public class UsuarioServlet extends BaseServlet {
             if (errores.isEmpty() && UsuarioDao.existeEmail(f.get("email"), usuario.getId())) {
                 errores.add("El email ya está registrado por otro usuario.");
             }
-            if (errores.isEmpty() && !nuevaClave.isEmpty() && nuevaClave.length() < 8) {
-                errores.add("La nueva contraseña debe tener al menos 8 caracteres.");
+            if (errores.isEmpty() && !nuevaClave.isEmpty()) {
+                String errorNuevaClave = Seguridad.validarFortaleza(nuevaClave);
+                if (errorNuevaClave != null) {
+                    errores.add(errorNuevaClave);
+                }
             }
             if (errores.isEmpty()) {
                 String hash = nuevaClave.isEmpty() ? null : Seguridad.hash(nuevaClave);
-                UsuarioDao.actualizar(usuario.getId(), f.get("nombre"), f.get("dni"), f.get("celular"), f.get("email"), f.get("rol"), hash);
+                UsuarioDao.actualizar(usuario.getId(), f.get("nombre"), f.get("dni"), f.get("celular"), f.get("email"), f.get("rol"), f.get("oficina"), hash);
                 flash(req, "Usuario actualizado exitosamente.", "success");
                 if (esAjax(req)) {
                     responderJson(res, true, "Usuario actualizado exitosamente.", new ArrayList<>());
@@ -319,12 +332,6 @@ public class UsuarioServlet extends BaseServlet {
         Usuario objetivo = UsuarioDao.porId(id);
         if (objetivo == null) {
             flash(req, "El usuario a eliminar no existe.", "danger");
-            redirigir(req, res, "/usuarios/listar");
-            return;
-        }
-
-        if ("admin".equalsIgnoreCase(objetivo.getRol())) {
-            flash(req, "Por seguridad, los usuarios con rol de Administrador no pueden ser eliminados.", "warning");
             redirigir(req, res, "/usuarios/listar");
             return;
         }

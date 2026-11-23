@@ -127,29 +127,66 @@
 
         var esAprobar = accion === 'aprobar_solicitud';
 
-        defaultMixin.fire({
-            title: esAprobar ? '¿Aprobar solicitud?' : '¿Rechazar solicitud?',
-            html: esAprobar
-                ? '<p class="text-muted mb-0">El equipo será asignado al usuario solicitante y se registrará el préstamo.</p>'
-                : '<p class="text-muted mb-0">La solicitud será rechazada y el usuario será notificado.</p>',
-            icon: esAprobar ? 'question' : 'warning',
-            iconColor: esAprobar ? UNCP_GREEN : UNCP_RED,
-            showCancelButton: true,
-            confirmButtonText: esAprobar
-                ? '<i class="ri-checkbox-circle-line me-1"></i> Sí, aprobar'
-                : '<i class="ri-close-circle-line me-1"></i> Sí, rechazar',
-            cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: esAprobar ? 'btn btn-success swal-btn px-6 py-2 font-bold' : 'btn btn-danger swal-btn px-6 py-2 font-bold',
-                cancelButton:  'btn btn-secondary swal-btn px-6 py-2 font-bold',
-                popup:         'swal-uncp-popup'
-            }
-        }).then(function (result) {
-            if (result.isConfirmed) {
-                form.setAttribute('data-swal-confirmed', '1');
-                form.submit();
-            }
-        });
+        if (esAprobar) {
+            defaultMixin.fire({
+                title: '¿Aprobar solicitud?',
+                html: '<p class="text-muted mb-0">El equipo será asignado al usuario solicitante y se registrará el préstamo.</p>',
+                icon: 'question',
+                iconColor: UNCP_GREEN,
+                showCancelButton: true,
+                confirmButtonText: '<i class="ri-checkbox-circle-line me-1"></i> Sí, aprobar',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'btn btn-success swal-btn px-6 py-2 font-bold',
+                    cancelButton:  'btn btn-secondary swal-btn px-6 py-2 font-bold',
+                    popup:         'swal-uncp-popup'
+                }
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    form.setAttribute('data-swal-confirmed', '1');
+                    form.submit();
+                }
+            });
+        } else {
+            // Rechazo con solicitud obligatoria de motivo
+            defaultMixin.fire({
+                title: 'Rechazar solicitud',
+                html: '<p class="text-muted mb-3" style="font-size:0.9rem;">Por favor, ingresa el motivo del rechazo para notificar al usuario:</p>' +
+                      '<textarea id="swalMotivoRechazo" class="form-control" rows="3" placeholder="Ej: Equipo actualmente reservado o no disponible para dicha fecha..." style="resize:vertical;"></textarea>',
+                icon: 'warning',
+                iconColor: UNCP_RED,
+                showCancelButton: true,
+                confirmButtonText: '<i class="ri-close-circle-line me-1"></i> Confirmar rechazo',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'btn btn-danger swal-btn px-6 py-2 font-bold',
+                    cancelButton:  'btn btn-secondary swal-btn px-6 py-2 font-bold',
+                    popup:         'swal-uncp-popup'
+                },
+                preConfirm: function () {
+                    var motivo = document.getElementById('swalMotivoRechazo').value.trim();
+                    if (!motivo) {
+                        Swal.showValidationMessage('Debe ingresar el motivo del rechazo.');
+                        return false;
+                    }
+                    return motivo;
+                }
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    var motivo = result.value;
+                    var hiddenMotivo = form.querySelector('input[name="motivo_rechazo"]');
+                    if (!hiddenMotivo) {
+                        hiddenMotivo = document.createElement('input');
+                        hiddenMotivo.type = 'hidden';
+                        hiddenMotivo.name = 'motivo_rechazo';
+                        form.appendChild(hiddenMotivo);
+                    }
+                    hiddenMotivo.value = motivo;
+                    form.setAttribute('data-swal-confirmed', '1');
+                    form.submit();
+                }
+            });
+        }
     }, true);
 
     // ------------------------------------------------------------------

@@ -83,6 +83,11 @@ public abstract class BaseServlet extends HttpServlet {
         return (Usuario) req.getAttribute("usuarioActual");
     }
 
+    protected boolean esAdmin(HttpServletRequest req) {
+        Usuario u = usuario(req);
+        return u != null && u.isAdmin();
+    }
+
     protected boolean esEncargado(HttpServletRequest req) {
         Usuario u = usuario(req);
         return u != null && u.isEncargado();

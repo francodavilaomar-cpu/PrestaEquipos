@@ -23,6 +23,31 @@ public final class Seguridad {
     }
 
     /**
+     * Valida que la contraseña cumpla los requisitos mínimos:
+     * - Al menos 8 caracteres
+     * - Al menos una letra mayúscula
+     * - Al menos un número
+     */
+    public static String validarFortaleza(String clave) {
+        if (clave == null || clave.length() < 8) {
+            return "La contraseña debe tener al menos 8 caracteres.";
+        }
+        boolean tieneMayus = false;
+        boolean tieneNumero = false;
+        for (char c : clave.toCharArray()) {
+            if (Character.isUpperCase(c)) tieneMayus = true;
+            else if (Character.isDigit(c)) tieneNumero = true;
+        }
+        if (!tieneMayus) {
+            return "La contraseña debe incluir al menos una letra mayúscula (A-Z).";
+        }
+        if (!tieneNumero) {
+            return "La contraseña debe incluir al menos un número (ej. DNI).";
+        }
+        return null;
+    }
+
+    /**
      * PHP genera hashes con prefijo $2y$; jBCrypt solo conoce $2a$. Son el mismo algoritmo,
      * así que se normaliza el prefijo antes de verificar.
      */

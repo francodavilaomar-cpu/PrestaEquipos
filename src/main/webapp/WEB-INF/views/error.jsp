@@ -36,6 +36,7 @@
                     <h4 class="mt-4">Error de base de datos</h4>
                     <p class="text-muted">Error de conexión a la base de datos. Verifique que SQL Server esté iniciado
                         y que los datos de <code>app.properties</code> sean correctos.</p>
+                    <p class="text-muted small mt-2"><code>${f:h(mensajeError)}</code></p>
                 </c:when>
                 <c:otherwise>
                     <h4 class="mt-4">Ocurrió un error inesperado</h4>

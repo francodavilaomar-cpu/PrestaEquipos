@@ -22,6 +22,9 @@ public final class UsuarioDao {
         u.setEmail(rs.getString("email"));
         u.setPasswordHash(rs.getString("password_hash"));
         u.setRol(rs.getString("rol"));
+        if (Db.has(rs, "oficina")) {
+            u.setOficina(rs.getString("oficina"));
+        }
         u.setEstado(rs.getInt("estado"));
         u.setFechaRegistro(Db.dt(rs, "fecha_registro"));
         return u;
@@ -72,20 +75,28 @@ public final class UsuarioDao {
         return Db.scalar("SELECT COUNT(*) FROM usuarios WHERE email = ? AND id <> ?", email, excluirId) > 0;
     }
 
+    public static long crear(String nombre, String dni, String celular, String email, String hash, String rol, String oficina) {
+        return Db.insert("INSERT INTO usuarios (nombre, dni, celular, email, password_hash, rol, oficina, estado, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)",
+                nombre, dni, celular, email, hash, rol, oficina, Fechas.ahora());
+    }
+
     public static long crear(String nombre, String dni, String celular, String email, String hash, String rol) {
-        return Db.insert("INSERT INTO usuarios (nombre, dni, celular, email, password_hash, rol, estado, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, 1, ?)",
-                nombre, dni, celular, email, hash, rol, Fechas.ahora());
+        return crear(nombre, dni, celular, email, hash, rol, null);
     }
 
     /** Actualiza los datos; si hash es null se conserva la contraseña actual. */
-    public static void actualizar(int id, String nombre, String dni, String celular, String email, String rol, String hash) {
+    public static void actualizar(int id, String nombre, String dni, String celular, String email, String rol, String oficina, String hash) {
         if (hash == null) {
-            Db.update("UPDATE usuarios SET nombre = ?, dni = ?, celular = ?, email = ?, rol = ? WHERE id = ?",
-                    nombre, dni, celular, email, rol, id);
+            Db.update("UPDATE usuarios SET nombre = ?, dni = ?, celular = ?, email = ?, rol = ?, oficina = ? WHERE id = ?",
+                    nombre, dni, celular, email, rol, oficina, id);
         } else {
-            Db.update("UPDATE usuarios SET nombre = ?, dni = ?, celular = ?, email = ?, rol = ?, password_hash = ? WHERE id = ?",
-                    nombre, dni, celular, email, rol, hash, id);
+            Db.update("UPDATE usuarios SET nombre = ?, dni = ?, celular = ?, email = ?, rol = ?, oficina = ?, password_hash = ? WHERE id = ?",
+                    nombre, dni, celular, email, rol, oficina, hash, id);
         }
+    }
+
+    public static void actualizar(int id, String nombre, String dni, String celular, String email, String rol, String hash) {
+        actualizar(id, nombre, dni, celular, email, rol, null, hash);
     }
 
     /** Cambia solo la contraseña (perfil y recuperación). */

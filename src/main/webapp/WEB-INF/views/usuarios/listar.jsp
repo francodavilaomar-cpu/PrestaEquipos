@@ -131,7 +131,7 @@
                                             </button>
                                         </form>
                                     </c:if>
-                                    <c:if test="${u.rol != 'admin' && u.id != usuarioActual.id}">
+                                    <c:if test="${u.id != usuarioActual.id}">
                                         <form method="POST" action="${ctx}/usuarios/eliminar" class="inline form-eliminar" data-confirm="¿Está seguro de eliminar permanentemente al usuario '${f:h(u.nombre)}'? Esta acción no se puede deshacer.">
                                             <t:csrf/>
                                             <input type="hidden" name="id" value="${u.id}">

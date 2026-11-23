@@ -53,7 +53,7 @@
                     <div class="oti-maint-field"><label class="form-label" for="equipo_id">Equipo *</label>
                         <select class="form-select" name="equipo_id" id="equipo_id" required>
                             <option value="">Seleccionar equipo...</option>
-                            <c:forEach var="eq" items="${equiposMantenimiento}"><c:if test="${eq.estado != 'dado_de_baja'}"><option value="${eq.id}">${f:h(eq.nombre)} · ${f:h(eq.codigoInventario)} (${f:h(eq.estado)})</option></c:if></c:forEach>
+                            <c:forEach var="equipo" items="${equiposMantenimiento}"><option value="${equipo.id}">${f:h(equipo.nombre)} · ${f:h(equipo.codigoInventario)} (${f:h(equipo.estado)})</option></c:forEach>
                         </select>
                     </div>
                     <div class="oti-maint-field"><label class="form-label" for="tipo">Tipo *</label><select class="form-select" name="tipo" id="tipo" required><option value="preventivo">Preventivo</option><option value="correctivo">Correctivo</option></select></div>

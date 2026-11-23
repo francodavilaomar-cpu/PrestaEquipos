@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -131,7 +132,11 @@ public class AsistenteServlet extends BaseServlet {
         if (!esEncargado(req)) { res.sendError(HttpServletResponse.SC_FORBIDDEN); return; }
         req.setAttribute("alertasMantenimiento", MantenimientoDao.alertasPreventivas());
         req.setAttribute("mantenimientos", MantenimientoDao.recientes(40));
-        req.setAttribute("equiposMantenimiento", EquipoDao.catalogo());
+        List<Equipo> equiposMant = new ArrayList<>();
+        for (Equipo e : EquipoDao.catalogo()) {
+            if (!"dado_de_baja".equals(e.getEstado())) equiposMant.add(e);
+        }
+        req.setAttribute("equiposMantenimiento", equiposMant);
         render(req, res, "ia/mantenimiento", "Mantenimiento inteligente", "mantenimiento");
     }
 

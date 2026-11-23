@@ -71,14 +71,14 @@
         <div class="col-span-12 md:col-span-6 mb-4">
             <label for="fecha_prestamo" class="form-label font-bold">Fecha de Préstamo *</label>
             <input type="datetime-local" class="form-control" id="fecha_prestamo" name="fecha_prestamo" required
-                   min="${minPrestamo}" value="${fechaPrestamoValor}">
-            <div class="invalid-feedback">La fecha del préstamo debe ser hoy o una fecha futura (cualquier hora de hoy es válida).</div>
+                   value="${fechaPrestamoValor}">
+            <div class="invalid-feedback">Indique la fecha y hora del préstamo.</div>
         </div>
         <div class="col-span-12 md:col-span-6 mb-4">
             <label for="fecha_devolucion_esperada" class="form-label font-bold">Fecha de Devolución Esperada *</label>
             <input type="datetime-local" class="form-control" id="fecha_devolucion_esperada" name="fecha_devolucion_esperada" required
-                   min="${minDevolucion}" value="${empty param.fecha_devolucion_esperada ? fechaDevolucionValor : f:h(param.fecha_devolucion_esperada)}">
-            <div class="invalid-feedback">Debe ser posterior a la hora actual y a la fecha de préstamo.</div>
+                   value="${empty param.fecha_devolucion_esperada ? fechaDevolucionValor : f:h(param.fecha_devolucion_esperada)}">
+            <div class="invalid-feedback">Debe ser posterior a la fecha de préstamo.</div>
         </div>
     </div>
 

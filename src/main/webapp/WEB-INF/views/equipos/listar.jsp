@@ -173,7 +173,17 @@
                             <span id="spanTotalTabla">${equipos.size()}</span> equipos
                         </span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <label for="selectRegistrosEquipos" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+                        <select id="selectRegistrosEquipos" class="form-select form-select-sm" style="width: auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="15">15</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span class="text-[0.875em] text-muted">registros</span>
                         <button type="button" class="btn-export-excel" onclick="exportTableToCSV('tablaEquipos', 'inventario_equipos.csv')" title="Exportar filas visibles a Excel (CSV)">
                             <i class="ri-file-excel-2-line"></i> Excel
                         </button>
@@ -340,6 +350,9 @@
                                                 </c:when>
                                                 <c:when test="${sol.estado == 'rechazada'}">
                                                     <span class="badge badge-vencido"><i class="ri-close-circle-fill"></i> Rechazada</span>
+                                                    <c:if test="${not empty sol.motivoRechazo}">
+                                                        <small class="block text-danger mt-1" style="font-size:0.75rem;"><i class="ri-information-line"></i> Motivo: ${f:h(sol.motivoRechazo)}</small>
+                                                    </c:if>
                                                 </c:when>
                                                 <c:when test="${sol.estado == 'devuelta'}">
                                                     <span class="badge badge-disponible"><i class="ri-arrow-go-back-line"></i> Devuelta</span>
@@ -485,8 +498,12 @@
         let categoriaFiltro = selectCategoria ? selectCategoria.value : '';
         let estadoFiltro = selectEstado ? selectEstado.value : '';
 
-        // Paginación: 9 equipos por página
-        const EQUIPOS_POR_PAGINA = 9;
+        // Paginación: cantidad de registros visible por página (configurable)
+        let registrosPorPagina = 10;
+        const selectRegistrosEquipos = document.getElementById('selectRegistrosEquipos');
+        if (selectRegistrosEquipos) {
+            registrosPorPagina = parseInt(selectRegistrosEquipos.value, 10) || 10;
+        }
         let paginaActual = 1;
         let filasFiltradas = [];
 
@@ -529,11 +546,11 @@
         }
 
         function paginarEquipos() {
-            const totalPaginas = Math.ceil(filasFiltradas.length / EQUIPOS_POR_PAGINA);
+            const totalPaginas = Math.ceil(filasFiltradas.length / registrosPorPagina);
             if (paginaActual > totalPaginas) paginaActual = totalPaginas || 1;
 
-            const inicio = (paginaActual - 1) * EQUIPOS_POR_PAGINA;
-            const fin = inicio + EQUIPOS_POR_PAGINA;
+            const inicio = (paginaActual - 1) * registrosPorPagina;
+            const fin = inicio + registrosPorPagina;
 
             filasFiltradas.forEach((fila, idx) => {
                 if (idx >= inicio && idx < fin) {
@@ -756,6 +773,14 @@
             btnRestablecerVacio.addEventListener('click', resetearTodo);
         }
 
+        if (selectRegistrosEquipos) {
+            selectRegistrosEquipos.addEventListener('change', function () {
+                registrosPorPagina = parseInt(this.value, 10) || 10;
+                paginaActual = 1;
+                paginarEquipos();
+            });
+        }
+
         const formFiltro = document.getElementById('formFiltroEquipos');
         if (formFiltro) {
             formFiltro.addEventListener('submit', function(e) {
@@ -779,12 +804,14 @@
             <h4 class="mb-1 font-bold"><i class="ri-computer-line me-2 text-success"></i> Catálogo y Solicitud de Equipos</h4>
             <p class="text-muted mb-0">Consulta los equipos disponibles en la universidad y solicita el préstamo para tu oficina</p>
         </div>
+        <c:if test="${tabActiva != 'mis_solicitudes'}">
         <button type="button" class="btn btn-primary"
                 data-modal-url="${ctx}/equipos/solicitud?modal=1"
                 data-modal-title="Formulario de Solicitud de Equipo"
                 data-modal-boton="Enviar Solicitud">
             <i class="ri-send-plane-fill me-1"></i> Nueva Solicitud
         </button>
+        </c:if>
     </div>
 
     <ul class="nav nav-pills mb-6" id="userTabs" role="tablist">
@@ -921,107 +948,214 @@
 
         <!-- MIS SOLICITUDES -->
         <div class="tab-pane fade ${tabActiva == 'mis_solicitudes' ? 'show active' : ''}" id="tab-mis-solicitudes" role="tabpanel">
-            <div class="card shadow-sm border-0">
+            <!-- Selector de registros por página -->
+            <div class="flex justify-end gap-2 mb-4 flex-wrap items-center">
+                <label for="selectRegistrosMisSol" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+                <select id="selectRegistrosMisSol" class="form-select form-select-sm" style="width: auto;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span class="text-[0.875em] text-muted">registros</span>
+            </div>
+
+            <!-- Exportar ambas tablas -->
+            <div class="flex justify-end gap-2 mb-4 flex-wrap">
+                <button type="button" class="btn-export-excel" onclick="exportarMisSolicitudesExcel()" title="Exportar ambas tablas a Excel">
+                    <i class="ri-file-excel-2-line"></i> Excel (ambos cuadros)
+                </button>
+                <button type="button" class="btn-export-pdf" onclick="exportarMisSolicitudesPDF()" title="Exportar ambas tablas a PDF">
+                    <i class="ri-file-pdf-2-line"></i> PDF (ambos cuadros)
+                </button>
+            </div>
+
+            <!-- Prestando -->
+            <div class="card shadow-sm border-0 mb-6">
                 <div class="card-header bg-white py-4 px-6 flex flex-wrap justify-between items-center gap-2">
-                    <h6 class="mb-0 text-dark font-bold"><i class="ri-time-line me-2 text-success text-xl"></i> Mis Solicitudes Enviadas</h6>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-sm btn-outline-secondary filtro-sol active" data-filtro="todos">Todas</button>
-                        <button type="button" class="btn btn-sm btn-outline-warning filtro-sol" data-filtro="pendiente">Pendiente</button>
-                        <button type="button" class="btn btn-sm btn-outline-success filtro-sol" data-filtro="aprobada">Aprobada</button>
-                        <button type="button" class="btn-export-excel" onclick="exportTableToCSV('tablaMisSolicitudes', 'mis_solicitudes.csv')" title="Exportar a Excel (CSV)"><i class="ri-file-excel-2-line"></i> Excel</button>
-                        <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('tablaMisSolicitudes', 'Mis Solicitudes', 'mis_solicitudes.pdf')" title="Exportar a PDF"><i class="ri-file-pdf-2-line"></i> PDF</button>
+                    <h6 class="mb-0 text-dark font-bold"><i class="ri-play-circle-line me-2 text-success text-xl"></i> Mis Equipos en Préstamo</h6>
+                    <div class="flex gap-2">
+                        <button type="button" class="btn-export-excel" onclick="exportTableToCSV('tablaMisPrestamos', 'mis_equipos_en_prestamo.csv')" title="Exportar a Excel (CSV)"><i class="ri-file-excel-2-line"></i> Excel</button>
+                        <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('tablaMisPrestamos', 'Mis Equipos en Préstamo', 'mis_equipos_en_prestamo.pdf')" title="Exportar a PDF"><i class="ri-file-pdf-2-line"></i> PDF</button>
                     </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" id="tablaMisSolicitudes">
+                        <table class="table table-hover align-middle mb-0" id="tablaMisPrestamos">
+                            <thead>
+                                <tr>
+                                    <th class="ps-6">Equipo</th>
+                                    <th>Código</th>
+                                    <th>Fecha Préstamo</th>
+                                    <th>Devolución Esperada</th>
+                                    <th>Estado</th>
+                                    <th class="pe-6">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:set var="hayMisPrestamos" value="false"/>
+                                <c:forEach var="p" items="${misPrestamos}">
+                                    <c:if test="${empty p.fechaDevolucionReal}">
+                                        <c:set var="hayMisPrestamos" value="true"/>
+                                        <tr>
+                                            <td class="ps-6"><div class="font-semibold text-dark">${f:h(p.equipoNombre)}</div></td>
+                                            <td><span class="code-pill">${f:h(p.codigoInventario)}</span></td>
+                                            <td>${f:fecha(p.fechaPrestamo, 'dd/MM/yyyy HH:mm')}</td>
+                                            <td>${f:fecha(p.fechaDevolucionEsperada, 'dd/MM/yyyy')}</td>
+                                            <td><span class="badge ${p.estado == 'vencido' ? 'badge-vencido' : 'badge-prestado'}">${f:cap(p.estado)}</span></td>
+                                            <td class="pe-6">
+                                                <button type="button" class="btn btn-sm btn-primary shadow-sm"
+                                                        data-modal-url="${ctx}/prestamos/devolver?modal=1&amp;prestamo_id=${p.id}"
+                                                        data-modal-title="Devolver Equipo"
+                                                        data-modal-boton="Devolver">
+                                                    <i class="ri-arrow-go-back-line me-1"></i> Devolver
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </c:if>
+                                </c:forEach>
+                                <c:if test="${!hayMisPrestamos}">
+                                    <tr><td colspan="6" class="text-center text-muted py-8">No tienes equipos en préstamo actualmente.</td></tr>
+                                </c:if>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pendientes -->
+            <div class="card shadow-sm border-0 mb-6">
+                <div class="card-header bg-white py-4 px-6 flex flex-wrap justify-between items-center gap-2">
+                    <h6 class="mb-0 text-dark font-bold"><i class="ri-time-line me-2 text-warning text-xl"></i> Solicitudes Pendientes</h6>
+                    <div class="flex gap-2">
+                        <button type="button" class="btn-export-excel" onclick="exportTableToCSV('tablaMisSolicitudesPendientes', 'mis_solicitudes_pendientes.csv')" title="Exportar a Excel (CSV)"><i class="ri-file-excel-2-line"></i> Excel</button>
+                        <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('tablaMisSolicitudesPendientes', 'Mis Solicitudes - Pendientes', 'mis_solicitudes_pendientes.pdf')" title="Exportar a PDF"><i class="ri-file-pdf-2-line"></i> PDF</button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="tablaMisSolicitudesPendientes">
                             <thead>
                                 <tr>
                                     <th class="ps-6">Equipo Solicitado</th>
                                     <th>Fecha Solicitud</th>
                                     <th>Período Solicitado</th>
                                     <th>Oficina Destino</th>
-                                    <th class="pe-6">Estado</th>
+                                    <th>Estado</th>
+                                    <th class="col-boleta pe-6">Boleta</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                <c:set var="hayPend" value="false"/>
                                 <c:forEach var="ms" items="${misSolicitudes}">
-                                    <tr data-estado="${ms.estado}">
-                                        <td class="ps-6 font-bold">${f:h(ms.equipoSolicitado)}</td>
-                                        <td>${f:fecha(ms.fechaSolicitud, 'dd/MM/yyyy HH:mm')}</td>
-                                        <td>
-                                            <small class="block">Desde: ${f:fecha(ms.fechaPrestamo, 'dd/MM/yyyy HH:mm')}</small>
-                                            <small class="block">Hasta: ${f:fecha(ms.fechaDevolucion, 'dd/MM/yyyy HH:mm')}</small>
-                                        </td>
-                                        <td>${f:h(ms.oficina)}</td>
-                                        <td class="pe-6">
-                                            <c:choose>
-                                                <c:when test="${ms.estado == 'aprobada'}">
-                                                    <span class="badge badge-disponible"><i class="ri-checkbox-circle-fill"></i> Aprobada</span>
-                                                </c:when>
-                                                <c:when test="${ms.estado == 'prestado'}">
-                                                    <span class="badge badge-prestado"><i class="ri-arrow-left-right-line"></i> Prestado</span>
-                                                </c:when>
-                                                <c:when test="${ms.estado == 'rechazada'}">
-                                                    <span class="badge badge-vencido"><i class="ri-close-circle-fill"></i> Rechazada</span>
-                                                </c:when>
-                                                <c:when test="${ms.estado == 'devuelta'}">
-                                                    <span class="badge badge-disponible"><i class="ri-arrow-go-back-line"></i> Devuelta</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="badge badge-mantenimiento"><i class="ri-time-line"></i> Pendiente</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                    </tr>
+                                    <c:if test="${ms.estado eq 'pendiente'}">
+                                        <c:set var="hayPend" value="true"/>
+                                        <tr>
+                                            <td class="ps-6 font-bold">${f:h(ms.equipoSolicitado)}</td>
+                                            <td>${f:fecha(ms.fechaSolicitud, 'dd/MM/yyyy HH:mm')}</td>
+                                            <td>
+                                                <small class="block">Desde: ${f:fecha(ms.fechaPrestamo, 'dd/MM/yyyy HH:mm')}</small>
+                                                <small class="block">Hasta: ${f:fecha(ms.fechaDevolucion, 'dd/MM/yyyy HH:mm')}</small>
+                                            </td>
+                                            <td>${f:h(ms.oficina)}</td>
+                                            <td><span class="badge badge-mantenimiento"><i class="ri-time-line"></i> Pendiente</span></td>
+                                            <td class="col-boleta"><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirBoleta('solicitud', ${ms.id})" title="Ver boleta"><i class="ri-file-text-line me-1"></i> Boleta</button></td>
+                                        </tr>
+                                    </c:if>
                                 </c:forEach>
-                                <c:if test="${empty misSolicitudes}">
-                                    <tr><td colspan="5" class="text-center text-muted py-12">
-                                        <i class="ri-inbox-line text-muted opacity-50" style="font-size: 3rem;"></i>
-                                        <p class="mt-2 mb-0">No has enviado ninguna solicitud todavía.</p>
-                                    </td></tr>
+                                <c:if test="${!hayPend}">
+                                    <tr><td colspan="6" class="text-center text-muted py-8">No tienes solicitudes pendientes.</td></tr>
                                 </c:if>
                             </tbody>
                         </table>
                     </div>
                     <div class="card-footer bg-white py-3 px-6">
-                        <nav><ul class="pagination pagination-sm mb-0" id="pagMisSolicitudes"></ul></nav>
+                        <nav><ul class="pagination pagination-sm mb-0" id="pagMisSolicitudesPendientes"></ul></nav>
                     </div>
                 </div>
             </div>
+
+            <!-- Solicitudes Rechazadas o Atendidas -->
+            <div class="card shadow-sm border-0 mb-6">
+                <div class="card-header bg-white py-4 px-6 flex flex-wrap justify-between items-center gap-2">
+                    <h6 class="mb-0 text-dark font-bold"><i class="ri-history-line me-2 text-info text-xl"></i> Historial de Solicitudes (Aprobadas / Rechazadas)</h6>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" id="tablaMisSolicitudesHistorial">
+                            <thead>
+                                <tr>
+                                    <th class="ps-6">Equipo Solicitado</th>
+                                    <th>Fecha Solicitud</th>
+                                    <th>Oficina Destino</th>
+                                    <th>Estado</th>
+                                    <th>Motivo / Observación</th>
+                                    <th class="col-boleta pe-6">Boleta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:set var="hayHist" value="false"/>
+                                <c:forEach var="ms" items="${misSolicitudes}">
+                                    <c:if test="${ms.estado ne 'pendiente'}">
+                                        <c:set var="hayHist" value="true"/>
+                                        <tr>
+                                            <td class="ps-6 font-bold">${f:h(ms.equipoSolicitado)}</td>
+                                            <td>${f:fecha(ms.fechaSolicitud, 'dd/MM/yyyy HH:mm')}</td>
+                                            <td>${f:h(ms.oficina)}</td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${ms.estado == 'aprobada'}">
+                                                        <span class="badge badge-disponible"><i class="ri-checkbox-circle-fill"></i> Aprobada</span>
+                                                    </c:when>
+                                                    <c:when test="${ms.estado == 'rechazada'}">
+                                                        <span class="badge badge-vencido"><i class="ri-close-circle-fill"></i> Rechazada</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="badge badge-prestado">${f:cap(ms.estado)}</span>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${ms.estado == 'rechazada' and not empty ms.motivoRechazo}">
+                                                        <span class="text-danger font-semibold"><i class="ri-error-warning-line"></i> ${f:h(ms.motivoRechazo)}</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <small class="text-muted">${empty ms.observaciones ? '-' : f:h(ms.observaciones)}</small>
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </td>
+                                            <td class="col-boleta pe-6"><button type="button" class="btn btn-sm btn-outline-primary" onclick="abrirBoleta('solicitud', ${ms.id})" title="Ver boleta"><i class="ri-file-text-line me-1"></i> Boleta</button></td>
+                                        </tr>
+                                    </c:if>
+                                </c:forEach>
+                                <c:if test="${!hayHist}">
+                                    <tr><td colspan="6" class="text-center text-muted py-8">No tienes solicitudes en el historial.</td></tr>
+                                </c:if>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+
             <script>
             (function () {
-                var botones = document.querySelectorAll('.filtro-sol');
-                botones.forEach(function (btn) {
-                    btn.addEventListener('click', function () {
-                        var filtro = btn.getAttribute('data-filtro');
-                        botones.forEach(function (b) { b.classList.remove('active'); });
-                        btn.classList.add('active');
-                        document.querySelectorAll('#tab-mis-solicitudes tbody tr[data-estado]').forEach(function (tr) {
-                            var est = tr.getAttribute('data-estado');
-                            if (filtro === 'todos' || est === filtro) {
-                                tr.style.display = '';
-                            } else {
-                                tr.style.display = 'none';
-                            }
-                        });
-                    });
-                });
-            })();
-            </script>
-            <script>
-            (function () {
-                function paginar(idTabla, idPag, porPagina) {
+                var select = document.getElementById('selectRegistrosMisSol');
+                function paginar(idTabla, idPag) {
                     var tabla = document.getElementById(idTabla);
                     var cont = document.getElementById(idPag);
                     if (!tabla || !cont) return;
                     var filas = Array.from(tabla.querySelectorAll('tbody tr'));
-                    var total = Math.ceil(filas.length / porPagina);
+                    var pp = select ? (parseInt(select.value, 10) || 5) : 5;
+                    var total = Math.ceil(filas.length / pp);
                     if (total <= 1) { cont.style.display = 'none'; return; }
                     var pagina = 1;
                     function render() {
                         filas.forEach(function (fila, idx) {
-                            fila.style.display = (idx >= (pagina - 1) * porPagina && idx < pagina * porPagina) ? '' : 'none';
+                            fila.style.display = (idx >= (pagina - 1) * pp && idx < pagina * pp) ? '' : 'none';
                         });
                         cont.innerHTML = '';
                         for (var i = 1; i <= total; i++) {
@@ -1038,8 +1172,22 @@
                     }
                     render();
                 }
-                paginar('tablaMisSolicitudes', 'pagMisSolicitudes', 5);
+                paginar('tablaMisSolicitudesPendientes', 'pagMisSolicitudesPendientes');
+                if (select) select.addEventListener('change', function () {
+                    paginar('tablaMisSolicitudesPendientes', 'pagMisSolicitudesPendientes');
+                });
             })();
+            </script>
+            <script>
+            function exportarMisSolicitudesExcel() {
+                exportMultipleTablesToCSV(['tablaMisSolicitudesPendientes', 'tablaMisPrestamos'], 'mis_solicitudes_completo.csv');
+            }
+            function exportarMisSolicitudesPDF() {
+                exportMultipleTablesToPDF([
+                    { id: 'tablaMisSolicitudesPendientes', title: 'Mis Solicitudes - Pendientes' },
+                    { id: 'tablaMisPrestamos', title: 'Mis Equipos en Préstamo' }
+                ], 'mis_solicitudes_completo.pdf');
+            }
             </script>
         </div>
     </div>
