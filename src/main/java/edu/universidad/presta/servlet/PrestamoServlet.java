@@ -3,6 +3,7 @@ package edu.universidad.presta.servlet;
 import edu.universidad.presta.dao.DataAccessException;
 import edu.universidad.presta.dao.EquipoDao;
 import edu.universidad.presta.dao.PrestamoDao;
+import edu.universidad.presta.dao.NotificacionDao;
 import edu.universidad.presta.dao.SolicitudDao;
 import edu.universidad.presta.dao.UsuarioDao;
 import edu.universidad.presta.model.Equipo;
@@ -112,8 +113,8 @@ public class PrestamoServlet extends BaseServlet {
                     + (seleccionado.getDni() != null && !seleccionado.getDni().isEmpty() ? " (DNI: " + seleccionado.getDni() + ")" : "");
         }
         req.setAttribute("usuarioBusquedaValor", textoBusqueda);
-        req.setAttribute("minPrestamo", Fechas.input(Fechas.hoy().atStartOfDay()));
-        req.setAttribute("minDevolucion", Fechas.input(ahora));
+        req.setAttribute("minPrestamo", "");
+        req.setAttribute("minDevolucion", "");
         if (!p(req, "fecha_prestamo").isEmpty()) {
             req.setAttribute("fechaPrestamoValor", p(req, "fecha_prestamo"));
         } else if (req.getAttribute("fechaPrestamoValor") == null) {
@@ -156,16 +157,12 @@ public class PrestamoServlet extends BaseServlet {
         LocalDateTime prestamo = p(req, "fecha_prestamo").isEmpty() ? ahora : Fechas.parse(p(req, "fecha_prestamo"));
         LocalDateTime devolucion = Fechas.parse(p(req, "fecha_devolucion_esperada"));
 
-        // "Hoy" es válido a cualquier hora: solo se rechazan días anteriores a hoy.
+        // Se permite registrar préstamos con fechas pasadas (por ejemplo, solicitudes atendidas con demora).
         if (prestamo == null) {
             errores.add("La fecha del préstamo no es válida.");
-        } else if (prestamo.isBefore(Fechas.hoy().atStartOfDay())) {
-            errores.add("La fecha del préstamo no puede ser anterior a hoy.");
         }
         if (devolucion == null) {
             errores.add("La fecha de devolución esperada es obligatoria.");
-        } else if (devolucion.isBefore(ahora)) {
-            errores.add("La devolución esperada debe ser posterior a la hora actual.");
         } else if (prestamo != null && !devolucion.isAfter(prestamo)) {
             errores.add("La fecha de devolución debe ser posterior a la fecha de préstamo.");
         }
@@ -281,12 +278,17 @@ public class PrestamoServlet extends BaseServlet {
         Usuario u = usuario(req);
         List<Prestamo> prestamos = PrestamoDao.ultimos(u.getId(), 100);
         req.setAttribute("prestamos", prestamos);
-        render(req, res, "prestamos/mis", "Mis Equipos", "equipos");
+        render(req, res, "prestamos/mis", "Mis Equipos", "mis-equipos");
     }
 
     // ================================================================== activos y vencidos
 
     private void vencidos(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
+        Usuario u = usuario(req);
+        // Al abrir el módulo de vencidos, los avisos de préstamos vencidos se consideran leídos.
+        if (u != null && u.isEncargado()) {
+            NotificacionDao.marcarVencidos(u.getId());
+        }
         List<Prestamo> prestamos = PrestamoDao.activosYVencidos();
         long vencidos = prestamos.stream().filter(Prestamo::isVencido).count();
         req.setAttribute("prestamos", prestamos);

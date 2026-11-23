@@ -26,12 +26,30 @@
     </div>
 </div>
 
-<c:if test="${totalVencidos > 0}">
-    <div class="alert alert-danger flex items-center gap-2 mb-6 shadow-sm">
-        <i class="ri-alert-fill text-xl"></i>
-        <div><strong>¡Atención!</strong> Hay <strong>${totalVencidos}</strong> préstamo(s) vencido(s) que requieren regularización.</div>
-    </div>
-</c:if>
+
+<!-- Exportar ambas tablas -->
+<div class="flex justify-end gap-2 mb-4 flex-wrap">
+    <button type="button" class="btn-export-excel" onclick="exportarVencidosExcel()" title="Exportar ambas tablas a Excel (CSV)">
+        <i class="ri-file-excel-2-line"></i> Excel (ambos cuadros)
+    </button>
+    <button type="button" class="btn-export-pdf" onclick="exportarVencidosPDF()" title="Exportar ambas tablas a PDF">
+        <i class="ri-file-pdf-2-line"></i> PDF (ambos cuadros)
+    </button>
+</div>
+
+<!-- Selector de registros por página -->
+<div class="flex justify-end gap-2 mb-4 flex-wrap items-center">
+    <label for="selectRegistrosVencidos" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+    <select id="selectRegistrosVencidos" class="form-select form-select-sm" style="width: auto;">
+        <option value="5">5</option>
+        <option value="10" selected>10</option>
+        <option value="15">15</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="100">100</option>
+    </select>
+    <span class="text-[0.875em] text-muted">registros</span>
+</div>
 
 <!-- Activos -->
 <div class="card shadow-sm border-0 mb-6">
@@ -75,9 +93,12 @@
                                 <td><span class="text-success"><i class="ri-checkbox-circle-fill me-1"></i>A tiempo</span></td>
                                 <td><span class="badge badge-prestado">Activo</span></td>
                                 <td class="text-right pe-6">
-                                    <a href="${ctx}/prestamos/devolver?prestamo_id=${p.id}" class="btn-action-icon btn-action-edit" title="Devolver">
+                                    <button type="button" class="btn-action-icon btn-action-edit" title="Devolver"
+                                            data-modal-url="${ctx}/prestamos/devolver?modal=1&amp;prestamo_id=${p.id}"
+                                            data-modal-title="Devolver Equipo"
+                                            data-modal-boton="Confirmar Devolución">
                                         <i class="ri-checkbox-circle-line"></i>
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                         </c:if>
@@ -136,9 +157,12 @@
                                 <td><span class="text-danger font-bold"><i class="ri-error-warning-fill me-1"></i>${p.diasVencido} día(s)</span></td>
                                 <td><span class="badge badge-vencido">Vencido</span></td>
                                 <td class="text-right pe-6">
-                                    <a href="${ctx}/prestamos/devolver?prestamo_id=${p.id}" class="btn-action-icon btn-action-edit" title="Devolver">
+                                    <button type="button" class="btn-action-icon btn-action-edit" title="Devolver"
+                                            data-modal-url="${ctx}/prestamos/devolver?modal=1&amp;prestamo_id=${p.id}"
+                                            data-modal-title="Devolver Equipo"
+                                            data-modal-boton="Confirmar Devolución">
                                         <i class="ri-checkbox-circle-line"></i>
-                                    </a>
+                                    </button>
                                 </td>
                             </tr>
                         </c:if>
@@ -157,17 +181,21 @@
 
 <script>
 (function () {
-    function paginar(idTabla, idPag, porPagina) {
+    var select = document.getElementById('selectRegistrosVencidos');
+    function porPagina() { return select ? (parseInt(select.value, 10) || 10) : 10; }
+
+    function paginar(idTabla, idPag) {
         var tabla = document.getElementById(idTabla);
         var cont = document.getElementById(idPag);
         if (!tabla || !cont) return;
         var filas = Array.from(tabla.querySelectorAll('tbody tr'));
-        var total = Math.ceil(filas.length / porPagina);
+        var pp = porPagina();
+        var total = Math.ceil(filas.length / pp);
         if (total <= 1) { cont.style.display = 'none'; return; }
         var pagina = 1;
         function render() {
             filas.forEach(function (fila, idx) {
-                fila.style.display = (idx >= (pagina - 1) * porPagina && idx < pagina * porPagina) ? '' : 'none';
+                fila.style.display = (idx >= (pagina - 1) * pp && idx < pagina * pp) ? '' : 'none';
             });
             cont.innerHTML = '';
             for (var i = 1; i <= total; i++) {
@@ -184,9 +212,24 @@
         }
         render();
     }
-    paginar('tablaActivos', 'pagActivos', 4);
-    paginar('tablaVencidos', 'pagVencidos', 4);
+
+    function aplicar() {
+        paginar('tablaActivos', 'pagActivos');
+        paginar('tablaVencidos', 'pagVencidos');
+    }
+    aplicar();
+    if (select) select.addEventListener('change', aplicar);
 })();
+
+function exportarVencidosExcel() {
+    exportMultipleTablesToCSV(['tablaActivos', 'tablaVencidos'], 'prestamos_activos_y_vencidos.csv');
+}
+function exportarVencidosPDF() {
+    exportMultipleTablesToPDF([
+        { id: 'tablaActivos', title: 'Préstamos Activos' },
+        { id: 'tablaVencidos', title: 'Préstamos Vencidos' }
+    ], 'prestamos_activos_y_vencidos.pdf');
+}
 </script>
 
 </t:layout>

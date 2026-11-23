@@ -8,6 +8,7 @@ import edu.universidad.presta.dao.PrestamoDao;
 import edu.universidad.presta.dao.SolicitudDao;
 import edu.universidad.presta.model.Equipo;
 import edu.universidad.presta.model.Solicitud;
+import edu.universidad.presta.model.TopEquipo;
 import edu.universidad.presta.service.EquipoService;
 import edu.universidad.presta.service.ReglaNegocioException;
 import edu.universidad.presta.util.Fechas;
@@ -18,6 +19,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -150,9 +152,20 @@ public class EquipoServlet extends BaseServlet {
             req.setAttribute("solicitudesRegistrables", registrables);
         } else {
             req.setAttribute("misSolicitudes", SolicitudDao.deUsuario(usuario(req).getId()));
+            req.setAttribute("misPrestamos", PrestamoDao.ultimos(usuario(req).getId(), 100));
             req.setAttribute("equiposCatalogo", EquipoDao.catalogo());
             req.setAttribute("categoriasCatalogo", CategoriaDao.resumenCatalogo());
             req.setAttribute("equiposDisponibles", EquipoDao.disponibles());
+            // Equipos más solicitados (top 3 por préstamos históricos) para marcarlos con estrella.
+            java.util.Set<String> masSolicitados = new java.util.HashSet<>();
+            try {
+                List<TopEquipo> top = PrestamoDao.topEquipos(LocalDate.of(2000, 1, 1), Fechas.hoy());
+                for (int i = 0; i < Math.min(3, top.size()); i++) {
+                    masSolicitados.add(top.get(i).getCodigoInventario());
+                }
+            } catch (Exception ignored) {
+            }
+            req.setAttribute("equiposMasSolicitados", masSolicitados);
         }
         render(req, res, "equipos/listar", "Gestión de Equipos", "equipos");
     }
@@ -183,6 +196,7 @@ public class EquipoServlet extends BaseServlet {
         req.setAttribute("solicitudesRegistrables", registrables);
         req.setAttribute("pageTitle", "Bandeja de Solicitudes");
         req.setAttribute("nav", "equipos");
+        req.setAttribute("tabActiva", "solicitudes");
         render(req, res, "equipos/bandeja", "Bandeja de Solicitudes", "equipos");
     }
 

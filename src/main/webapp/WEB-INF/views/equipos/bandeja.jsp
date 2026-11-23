@@ -13,7 +13,17 @@
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white py-4 px-6 flex justify-between items-center flex-wrap gap-2">
         <h6 class="mb-0 text-dark font-bold"><i class="ri-inbox-line me-2 text-success text-xl"></i> Bandeja de Solicitudes de Equipos</h6>
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center flex-wrap">
+            <label for="selectRegistrosBandeja" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+            <select id="selectRegistrosBandeja" class="form-select form-select-sm" style="width: auto;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span class="text-[0.875em] text-muted">registros</span>
             <button type="button" class="btn-export-excel" onclick="exportTableToCSV('tablaSolicitudes', 'solicitudes_equipos.csv')" title="Exportar a Excel (CSV)">
                 <i class="ri-file-excel-2-line"></i> Excel
             </button>
@@ -130,7 +140,7 @@
                         </tr>
                     </c:forEach>
                     <c:if test="${empty solicitudes}">
-                        <tr><td colspan="8" class="text-center text-muted py-12">
+                        <tr id="filaSinResultados"><td colspan="8" class="text-center text-muted py-12">
                             <i class="ri-inbox-line text-muted opacity-50" style="font-size: 3rem;"></i>
                             <p class="mt-4 mb-0">No hay solicitudes registradas.</p>
                         </td></tr>
@@ -139,6 +149,130 @@
             </table>
         </div>
     </div>
+    <div class="card-footer bg-white py-4 px-6 flex justify-between items-center flex-wrap gap-2" id="footerPaginacionBandeja">
+        <small class="text-muted mb-0" id="infoPaginacionBandeja"></small>
+        <nav aria-label="Paginación de solicitudes">
+            <ul class="pagination pagination-sm mb-0" id="paginacionBandeja"></ul>
+        </nav>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabla = document.getElementById('tablaSolicitudes');
+    if (!tabla) return;
+    const tbody = tabla.querySelector('tbody');
+    if (!tbody) return;
+    let filas = Array.from(tbody.querySelectorAll('tr')).filter(function (tr) {
+        return tr.querySelectorAll('td').length > 1;
+    });
+    const filaVacia = tbody.querySelector('#filaSinResultados');
+    const select = document.getElementById('selectRegistrosBandeja');
+    let porPagina = select ? (parseInt(select.value, 10) || 10) : 10;
+    let paginaActual = 1;
+
+    function paginar() {
+        const totalPaginas = Math.max(1, Math.ceil(filas.length / porPagina));
+        if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+        const inicio = (paginaActual - 1) * porPagina;
+        const fin = inicio + porPagina;
+        filas.forEach(function (fila, idx) {
+            fila.style.display = (idx >= inicio && idx < fin) ? '' : 'none';
+        });
+        if (filaVacia) {
+            filaVacia.style.display = filas.length ? 'none' : '';
+        }
+        const info = document.getElementById('infoPaginacionBandeja');
+        if (info) {
+            if (!filas.length) {
+                info.textContent = 'No hay solicitudes para mostrar';
+            } else {
+                info.textContent = 'Mostrando ' + (inicio + 1) + '–' + Math.min(fin, filas.length) +
+                    ' de ' + filas.length + ' registros';
+            }
+        }
+        renderPaginacion(totalPaginas);
+    }
+
+    function paginasVisibles(total, actual) {
+        if (total <= 7) {
+            const arr = [];
+            for (let i = 1; i <= total; i++) arr.push(i);
+            return arr;
+        }
+        if (actual <= 4) return [1, 2, 3, 4, 5, '...', total];
+        if (actual >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+        return [1, '...', actual - 1, actual, actual + 1, '...', total];
+    }
+
+    function renderPaginacion(totalPaginas) {
+        const contenedor = document.getElementById('paginacionBandeja');
+        if (!contenedor) return;
+        contenedor.innerHTML = '';
+        const nav = contenedor.closest('nav');
+        if (nav) nav.style.display = totalPaginas > 1 ? '' : 'none';
+        if (totalPaginas <= 1) return;
+
+        function crearItem(texto, destino, opciones) {
+            opciones = opciones || {};
+            const li = document.createElement('li');
+            li.className = 'page-item' + (opciones.activo ? ' active' : '') + (opciones.deshabilitado ? ' disabled' : '');
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'page-link';
+            boton.innerHTML = texto;
+            if (opciones.titulo) boton.title = opciones.titulo;
+            if (!opciones.deshabilitado && !opciones.activo) {
+                boton.addEventListener('click', function () { irAPagina(destino); });
+            }
+            li.appendChild(boton);
+            contenedor.appendChild(li);
+        }
+
+        crearItem('<i class="ri-arrow-left-s-line"></i>', paginaActual - 1, {
+            deshabilitado: paginaActual === 1,
+            titulo: 'Página anterior'
+        });
+
+        paginasVisibles(totalPaginas, paginaActual).forEach(function (pagina) {
+            if (pagina === '...') {
+                const li = document.createElement('li');
+                li.className = 'page-item disabled';
+                li.innerHTML = '<span class="page-link">…</span>';
+                contenedor.appendChild(li);
+            } else {
+                crearItem(String(pagina), pagina, { activo: pagina === paginaActual });
+            }
+        });
+
+        crearItem('<i class="ri-arrow-right-s-line"></i>', paginaActual + 1, {
+            deshabilitado: paginaActual === totalPaginas,
+            titulo: 'Página siguiente'
+        });
+    }
+
+    function irAPagina(pagina) {
+        const totalPaginas = Math.max(1, Math.ceil(filas.length / porPagina));
+        if (pagina < 1 || pagina > totalPaginas) return;
+        paginaActual = pagina;
+        paginar();
+        const tablaEl = document.getElementById('tablaSolicitudes');
+        if (tablaEl) {
+            const y = tablaEl.getBoundingClientRect().top + window.pageYOffset - 100;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+    }
+
+    if (select) {
+        select.addEventListener('change', function () {
+            porPagina = parseInt(this.value, 10) || 10;
+            paginaActual = 1;
+            paginar();
+        });
+    }
+
+    paginar();
+});
+</script>
 
 </t:layout>

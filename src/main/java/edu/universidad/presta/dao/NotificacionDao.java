@@ -104,6 +104,17 @@ public final class NotificacionDao {
         }
     }
 
+    /** Marca como leídos los avisos de préstamos vencidos del usuario. */
+    public static void marcarVencidos(int usuarioId) {
+        for (Notificacion n : avisosActuales()) {
+            if ("/prestamos/vencidos".equals(n.getEnlace())) {
+                Db.update("IF NOT EXISTS (SELECT 1 FROM notificaciones_leidas WHERE usuario_id = ? AND clave = ?) "
+                                + "INSERT INTO notificaciones_leidas (usuario_id, clave) VALUES (?, ?)",
+                        usuarioId, n.getClave(), usuarioId, n.getClave());
+            }
+        }
+    }
+
     /** Claves de los avisos ya leídos por el usuario. */
     public static Set<String> clavesLeidas(int usuarioId) {
         return new HashSet<>(Db.list("SELECT clave FROM notificaciones_leidas WHERE usuario_id = ?",

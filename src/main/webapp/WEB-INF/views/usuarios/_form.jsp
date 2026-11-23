@@ -12,7 +12,9 @@
     <div class="mb-4">
         <label for="nombre" class="form-label font-bold">Nombre Completo *</label>
         <input type="text" class="form-control" id="nombre" name="nombre" required placeholder="Ej: Juan Carlos Pérez Flores" value="${f:h(form.nombre)}">
+        <input type="hidden" id="nombre_dni" name="nombre_dni" value="">
         <div class="invalid-feedback">El nombre completo es obligatorio.</div>
+        <small class="text-muted d-block mt-1" id="nombre-dni-aviso"></small>
     </div>
 
     <div class="grid grid-cols-12 gap-x-6">
