@@ -6,7 +6,7 @@
 <%-- Clases reutilizadas varias veces en el layout (Tailwind las detecta por el texto) --%>
 <c:set var="lnk" value="mb-[3px] flex items-center gap-3 rounded-lg px-4 py-2.5 text-[0.92rem] font-medium text-white/80 no-underline transition-all hover:bg-white/[0.08] hover:text-white"/>
 <c:set var="lnkOn" value="!bg-sidebar-active !font-semibold !text-white shadow-[0_2px_8px_rgb(0_0_0/0.12)]"/>
-<c:set var="btnHeader" value="relative inline-flex size-10 items-center justify-center rounded-full border border-line bg-white p-0 text-[1.2rem] text-ink transition-colors hover:bg-slate-100"/>
+<c:set var="btnHeader" value="relative inline-flex size-8 items-center justify-center rounded-full border-2 border-primary bg-white p-0 text-[1rem] text-primary transition-colors hover:bg-primary/5"/>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -52,6 +52,13 @@
                             <i class="ri-computer-line shrink-0 text-[1.22rem]"></i> <span>Equipos</span>
                         </a>
                     </li>
+                    <c:if test="${esEncargado}">
+                        <li>
+                            <a class="${lnk} ${nav == 'vencidos' ? lnkOn : ''}" href="${ctx}/prestamos/vencidos">
+                                <i class="ri-time-line shrink-0 text-[1.22rem]"></i> <span>Bandeja de Solicitudes</span>
+                            </a>
+                        </li>
+                    </c:if>
                     <c:if test="${not esEncargado}">
                         <li>
                             <a class="${lnk} ${nav == 'equipos' && tabActiva == 'mis_solicitudes' ? lnkOn : ''}" href="${ctx}/equipos/listar?tab=mis_solicitudes">
@@ -64,13 +71,7 @@
                             </a>
                         </li>
                     </c:if>
-                    <c:if test="${esEncargado}">
-                        <li>
-                            <a class="${lnk} ${nav == 'equipos' && tabActiva == 'solicitudes' ? lnkOn : ''}" href="${ctx}/equipos/bandeja">
-                                <i class="ri-inbox-line shrink-0 text-[1.22rem]"></i> <span>Bandeja de Solicitudes</span>
-                            </a>
-                        </li>
-                    </c:if>
+
                     <c:if test="${esAdmin}">
                         <li>
                             <a class="${lnk} ${nav == 'usuarios' ? lnkOn : ''}" href="${ctx}/usuarios/listar">
@@ -230,19 +231,14 @@
 
                         <!-- Menú de Usuario -->
                         <div class="dropdown">
-                            <button class="dropdown-toggle flex items-center gap-2 rounded-full border border-line bg-white px-[0.85rem] py-[0.35rem] shadow-sm transition-colors hover:bg-slate-50" type="button" data-toggle="dropdown" aria-expanded="false">
-                                <span class="inline-flex size-8 items-center justify-center rounded-full bg-primary text-[0.85rem] font-bold text-white shadow-[0_2px_5px_rgb(0_77_61/0.25)]">${f:cap(usuarioActual.nombre.substring(0, 1))}</span>
-                                <span class="text-[0.9rem] font-semibold text-dark">${f:h(usuarioActual.nombre)}</span>
-                                <i class="ri-arrow-down-s-line text-muted"></i>
+                            <button class="dropdown-toggle flex items-center gap-2 rounded-full border-2 border-primary bg-white px-3 py-1.5 text-primary shadow-sm transition-all hover:bg-primary/5 hover:shadow-md" type="button" data-toggle="dropdown" aria-expanded="false">
+                                <span class="flex flex-col items-start leading-tight">
+                                    <span class="text-xs font-semibold text-dark">${f:h(usuarioActual.nombre)}</span>
+                                    <span class="text-xs text-muted">Rol: ${f:cap(usuarioActual.rol)}</span>
+                                </span>
+                                <i class="ri-arrow-down-s-line text-sm text-primary"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end mt-2 border-0 shadow-lg">
-                                <li>
-                                    <div class="dropdown-item-text px-4 py-2 text-[0.875em] text-muted">
-                                        <div class="font-bold text-dark">${f:h(usuarioActual.nombre)}</div>
-                                        <div><i class="ri-shield-user-line me-1 text-success"></i> Rol: ${f:cap(usuarioActual.rol)}</div>
-                                    </div>
-                                </li>
-                                <li><hr class="dropdown-divider my-1"></li>
                                 <li><a class="dropdown-item ${nav == 'perfil' ? 'active' : ''} py-2" href="${ctx}/perfil"
                                        data-modal-url="${ctx}/perfil?modal=1"
                                        data-modal-title="Mi Perfil y Contraseña"
@@ -357,7 +353,7 @@
     <script src="${ctx}/assets/js/buscador-select.js?v=20261113e"></script>
     <script src="${ctx}/assets/js/dni-lookup.js?v=20261123g"></script>
     <script src="${ctx}/assets/js/prestamo-usuarios.js?v=20261113e"></script>
-    <script src="${ctx}/assets/js/notificaciones.js?v=20261113e"></script>
+    <script src="${ctx}/assets/js/notificaciones.js?v=20261125a"></script>
     <script src="${ctx}/assets/js/asistente-ia.js?v=20261114a"></script>
 </body>
 </html>

@@ -144,4 +144,56 @@
 
     pintarContadores();
     aplicarFiltro();
+
+    // Notificaciones en tiempo real: consulta periódica sin recargar la página.
+    var metaCtx = document.querySelector('meta[name="ctx"]');
+    var ctx = metaCtx ? metaCtx.getAttribute('content') : '';
+    var urlJson = ctx + '/notificaciones?ajax=1';
+
+    function escHtml(v) {
+        return String(v == null ? '' : v)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function renderNotificaciones(data) {
+        if (!lista || !data) return;
+        var itemsData = data.items || [];
+        lista.innerHTML = '';
+        itemsData.forEach(function (n) {
+            var a = document.createElement('a');
+            a.className = 'notificacion-item ' + (n.leida ? '' : 'no-leida');
+            a.href = ctx + '/notificaciones/ir?clave=' + encodeURIComponent(n.clave || '') + '&url=' + encodeURIComponent(n.enlace || '');
+            a.setAttribute('data-leida', n.leida ? 'true' : 'false');
+            a.setAttribute('data-tipo', n.tipo || '');
+            a.innerHTML =
+                '<span class="notificacion-icono text-' + escHtml(n.tono || 'primary') + '"><i class="' + escHtml(n.icono || 'ri-notification-3-line') + '"></i></span>' +
+                '<span class="notificacion-texto">' +
+                    '<span class="notificacion-titulo">' + escHtml(n.titulo) + '</span>' +
+                    '<span class="notificacion-mensaje">' + escHtml(n.mensaje) + '</span>' +
+                    '<span class="notificacion-fecha">' + escHtml(n.fecha) + '</span>' +
+                '</span>' +
+                '<span class="notificacion-punto" aria-hidden="true"></span>';
+            lista.appendChild(a);
+        });
+        if (vacio) {
+            vacio.classList.toggle('hidden', itemsData.length > 0);
+        }
+        pintarContadores();
+        aplicarFiltro();
+    }
+
+    function actualizarNotificaciones() {
+        fetch(urlJson, {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+        })
+            .then(function (r) { return r.json(); })
+            .then(renderNotificaciones)
+            .catch(function () { /* silencioso */ });
+    }
+
+    setInterval(actualizarNotificaciones, 10000);
 })();

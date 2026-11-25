@@ -1,6 +1,8 @@
 package edu.universidad.presta.dao;
 
+import edu.universidad.presta.model.GrupoOficinas;
 import edu.universidad.presta.model.Oficina;
+import edu.universidad.presta.util.Oficinas;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -55,5 +57,17 @@ public final class OficinaDao {
     public static List<String> listarGrupos() {
         return Db.list("SELECT DISTINCT grupo FROM oficinas WHERE grupo IS NOT NULL AND grupo <> '' ORDER BY grupo ASC",
                 rs -> rs.getString("grupo"));
+    }
+
+    /** Si la tabla está vacía, la puebla con el catálogo fijo de oficinas/áreas. */
+    public static void sembrarSiVacia() {
+        if (!listarTodas().isEmpty()) {
+            return;
+        }
+        for (GrupoOficinas g : Oficinas.GRUPOS) {
+            for (String nombre : g.getOficinas()) {
+                crear(nombre, g.getEtiqueta(), null);
+            }
+        }
     }
 }

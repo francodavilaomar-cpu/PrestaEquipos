@@ -295,17 +295,17 @@
         <!-- PESTAÑA 2: SOLICITUDES -->
         <div class="tab-pane fade ${tabActiva == 'solicitudes' ? 'show active' : ''}" id="tab-solicitudes" role="tabpanel" aria-labelledby="tab-solicitudes-btn">
             <div class="mb-2">
-                <h4 class="mb-0 font-bold"><i class="ri-inbox-line me-2 text-success"></i> Bandeja de Solicitudes de Equipos</h4>
+                <h4 class="mb-0 font-bold"><i class="ri-inbox-line me-2 text-success"></i> Bandeja de Notificaciones de Equipos</h4>
                 <small class="text-muted">Atiende las solicitudes de los usuarios</small>
             </div>
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-4 px-6 flex justify-between items-center flex-wrap gap-2">
-                    <h6 class="mb-0 text-dark font-bold"><i class="ri-inbox-line me-2 text-success text-xl"></i> Bandeja de Solicitudes de Equipos</h6>
+                    <h6 class="mb-0 text-dark font-bold"><i class="ri-inbox-line me-2 text-success text-xl"></i> Bandeja de Notificaciones de Equipos</h6>
                     <div class="flex gap-2">
                         <button type="button" class="btn-export-excel" onclick="exportTableToCSV('tablaSolicitudes', 'solicitudes_equipos.csv')" title="Exportar a Excel (CSV)">
                             <i class="ri-file-excel-2-line"></i> Excel
                         </button>
-                        <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('tablaSolicitudes', 'Bandeja de Solicitudes de Equipos', 'solicitudes_equipos.pdf')" title="Exportar a PDF">
+                        <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('tablaSolicitudes', 'Bandeja de Notificaciones de Equipos', 'solicitudes_equipos.pdf')" title="Exportar a PDF">
                             <i class="ri-file-pdf-2-line"></i> PDF
                         </button>
                     </div>

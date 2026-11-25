@@ -194,10 +194,10 @@ public class EquipoServlet extends BaseServlet {
         req.setAttribute("solicitudes", solicitudes);
         req.setAttribute("solicitudesPendientes", pendientes);
         req.setAttribute("solicitudesRegistrables", registrables);
-        req.setAttribute("pageTitle", "Bandeja de Solicitudes");
+        req.setAttribute("pageTitle", "Bandeja de Notificaciones");
         req.setAttribute("nav", "equipos");
         req.setAttribute("tabActiva", "solicitudes");
-        render(req, res, "equipos/bandeja", "Bandeja de Solicitudes", "equipos");
+        render(req, res, "equipos/bandeja", "Bandeja de Notificaciones", "equipos");
     }
 
     private boolean esBandeja(HttpServletRequest req) {

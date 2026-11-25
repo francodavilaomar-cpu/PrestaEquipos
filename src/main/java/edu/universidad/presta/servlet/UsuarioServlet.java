@@ -125,7 +125,20 @@ public class UsuarioServlet extends BaseServlet {
         req.setAttribute("usuario", usuario);
         req.setAttribute("form", form);
         req.setAttribute("errores", errores);
-        req.setAttribute("oficinasDisponibles", edu.universidad.presta.dao.OficinaDao.listarActivas());
+        List<edu.universidad.presta.model.Oficina> oficinas = edu.universidad.presta.dao.OficinaDao.listarActivas();
+        if (oficinas.isEmpty()) {
+            oficinas = new ArrayList<>();
+            for (edu.universidad.presta.model.GrupoOficinas g : edu.universidad.presta.util.Oficinas.GRUPOS) {
+                for (String nombre : g.getOficinas()) {
+                    edu.universidad.presta.model.Oficina o = new edu.universidad.presta.model.Oficina();
+                    o.setNombre(nombre);
+                    o.setGrupo(g.getEtiqueta());
+                    o.setActivo(true);
+                    oficinas.add(o);
+                }
+            }
+        }
+        req.setAttribute("oficinasDisponibles", oficinas);
         req.setAttribute("gruposOficinas", edu.universidad.presta.util.Oficinas.gruposDinamicos());
         if (esModal(req)) {
             renderFragmento(req, res, "usuarios/_form");

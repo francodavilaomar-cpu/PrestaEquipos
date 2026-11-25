@@ -3,6 +3,7 @@ package edu.universidad.presta.listener;
 import edu.universidad.presta.config.AppConfig;
 import edu.universidad.presta.config.Conexion;
 import edu.universidad.presta.config.Database;
+import edu.universidad.presta.dao.OficinaDao;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -20,6 +21,7 @@ public class AppListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         sce.getServletContext().setAttribute("siteName", AppConfig.SITE_NAME);
         Database.init();
+        OficinaDao.sembrarSiVacia();
     }
 
     @Override

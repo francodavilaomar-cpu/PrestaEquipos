@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 public final class Database {
 
     private static final Logger LOG = Logger.getLogger(Database.class.getName());
-    private static final String SQL_INICIAL = "/db/prestamos_equipos.sql";
+    private static final String SQL_INICIAL = "/db/prestamos_equipo en sql server con ia incluido.sql";
     /** El script trae CREATE DATABASE / USE para sqlcmd; aquí la base ya se creó y estamos conectados a ella. */
     private static final Pattern IGNORAR = Pattern.compile("^(IF\\s+DB_ID|CREATE\\s+DATABASE|USE)\\b.*",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL);

@@ -27,33 +27,29 @@ window.reportePersona = {
 
 <!-- Exportar ambas tablas -->
 <div class="flex justify-end gap-2 mb-4 flex-wrap">
-    <button type="button" class="btn-export-excel" onclick="exportarHistorialExcel()" title="Exportar ambas tablas a Excel">
-        <i class="ri-file-excel-2-line"></i> Excel (ambos cuadros)
+    <button type="button" class="btn-export-excel" onclick="exportarHistorialExcel()" title="Exportar todos los cuadros a Excel">
+        <i class="ri-file-excel-2-line"></i> Excel (todos los cuadros)
     </button>
-    <button type="button" class="btn-export-pdf" onclick="exportarHistorialPDF()" title="Exportar ambas tablas a PDF">
-        <i class="ri-file-pdf-2-line"></i> PDF (ambos cuadros)
+    <button type="button" class="btn-export-pdf" onclick="exportarHistorialPDF()" title="Exportar todos los cuadros a PDF">
+        <i class="ri-file-pdf-2-line"></i> PDF (todos los cuadros)
     </button>
-</div>
-
-<!-- Selector de registros por página -->
-<div class="flex justify-end gap-2 mb-4 flex-wrap items-center">
-    <label for="selectRegistrosHistorial" class="text-[0.875em] text-muted mb-0">Mostrar</label>
-    <select id="selectRegistrosHistorial" class="form-select form-select-sm" style="width: auto;">
-        <option value="5">5</option>
-        <option value="10" selected>10</option>
-        <option value="15">15</option>
-        <option value="25">25</option>
-        <option value="50">50</option>
-        <option value="100">100</option>
-    </select>
-    <span class="text-[0.875em] text-muted">registros</span>
 </div>
 
 <!-- Prestando -->
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white py-3 px-4 flex flex-wrap justify-between items-center gap-2">
         <h6 class="mb-0 text-dark font-bold"><i class="ri-play-circle-line me-2 text-success text-xl"></i> Prestando</h6>
-        <div class="flex gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+            <label for="selectHistPrestando" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+            <select id="selectHistPrestando" class="form-select form-select-sm" style="width: auto;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span class="text-[0.875em] text-muted">registros</span>
             <button type="button" class="btn-export-excel" onclick="exportTableToCSV('histPrestando', 'historial_prestando.csv')" title="Exportar a Excel (CSV)"><i class="ri-file-excel-2-line"></i> Excel</button>
             <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('histPrestando', 'Historial - Prestando', 'historial_prestando.pdf')" title="Exportar a PDF"><i class="ri-file-pdf-2-line"></i> PDF</button>
         </div>
@@ -102,7 +98,17 @@ window.reportePersona = {
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white py-3 px-4 flex flex-wrap justify-between items-center gap-2">
         <h6 class="mb-0 text-dark font-bold"><i class="ri-error-warning-line me-2 text-danger text-xl"></i> Vencidos</h6>
-        <div class="flex gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+            <label for="selectHistVencidos" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+            <select id="selectHistVencidos" class="form-select form-select-sm" style="width: auto;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span class="text-[0.875em] text-muted">registros</span>
             <button type="button" class="btn-export-excel" onclick="exportTableToCSV('histVencidos', 'historial_vencidos.csv')" title="Exportar a Excel (CSV)"><i class="ri-file-excel-2-line"></i> Excel</button>
             <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('histVencidos', 'Historial - Vencidos', 'historial_vencidos.pdf')" title="Exportar a PDF"><i class="ri-file-pdf-2-line"></i> PDF</button>
         </div>
@@ -151,7 +157,17 @@ window.reportePersona = {
 <div class="card shadow-sm border-0">
     <div class="card-header bg-white py-3 px-4 flex flex-wrap justify-between items-center gap-2">
         <h6 class="mb-0 text-dark font-bold"><i class="ri-arrow-go-back-line me-2 text-success text-xl"></i> Devueltos</h6>
-        <div class="flex gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+            <label for="selectHistDevueltos" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+            <select id="selectHistDevueltos" class="form-select form-select-sm" style="width: auto;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span class="text-[0.875em] text-muted">registros</span>
             <button type="button" class="btn-export-excel" onclick="exportTableToCSV('histDevueltos', 'historial_devueltos.csv')" title="Exportar a Excel (CSV)"><i class="ri-file-excel-2-line"></i> Excel</button>
             <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('histDevueltos', 'Historial - Devueltos', 'historial_devueltos.pdf')" title="Exportar a PDF"><i class="ri-file-pdf-2-line"></i> PDF</button>
         </div>
@@ -196,17 +212,86 @@ window.reportePersona = {
     </div>
 </div>
 
+<!-- Solicitados -->
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 px-4 flex flex-wrap justify-between items-center gap-2">
+        <h6 class="mb-0 text-dark font-bold"><i class="ri-file-list-3-line me-2 text-success text-xl"></i> Solicitados</h6>
+        <div class="flex items-center gap-2 flex-wrap">
+            <label for="selectHistSolicitados" class="text-[0.875em] text-muted mb-0">Mostrar</label>
+            <select id="selectHistSolicitados" class="form-select form-select-sm" style="width: auto;">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <span class="text-[0.875em] text-muted">registros</span>
+            <button type="button" class="btn-export-excel" onclick="exportTableToCSV('histSolicitados', 'historial_solicitados.csv')" title="Exportar a Excel (CSV)"><i class="ri-file-excel-2-line"></i> Excel</button>
+            <button type="button" class="btn-export-pdf" onclick="exportTableToPDF('histSolicitados', 'Historial - Solicitados', 'historial_solicitados.pdf')" title="Exportar a PDF"><i class="ri-file-pdf-2-line"></i> PDF</button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="histSolicitados">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Equipo Solicitado</th>
+                        <th>Fecha Solicitud</th>
+                        <th>Fecha Préstamo</th>
+                        <th>Fecha Devolución</th>
+                        <th>Oficina y Área</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <c:set var="haySolicitados" value="false"/>
+                    <c:forEach var="sol" items="${solicitudesHistorial}">
+                        <c:set var="haySolicitados" value="true"/>
+                        <tr>
+                            <td class="ps-4"><div class="font-semibold text-dark">${f:h(sol.equipoSolicitado)}</div></td>
+                            <td>${f:fecha(sol.fechaSolicitud, 'dd/MM/yyyy HH:mm')}</td>
+                            <td>${f:fecha(sol.fechaPrestamo, 'dd/MM/yyyy HH:mm')}</td>
+                            <td>${f:fecha(sol.fechaDevolucion, 'dd/MM/yyyy HH:mm')}</td>
+                            <td>
+                                <div class="text-[0.875em] text-muted font-bold uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">${f:h(sol.area)}</div>
+                                <div class="font-semibold">${f:h(sol.oficina)}</div>
+                            </td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${sol.estado == 'aprobada'}"><span class="badge badge-disponible">Aprobada</span></c:when>
+                                    <c:when test="${sol.estado == 'rechazada'}"><span class="badge badge-vencido">Rechazada</span></c:when>
+                                    <c:when test="${sol.estado == 'devuelta'}"><span class="badge badge-disponible">Devuelta</span></c:when>
+                                    <c:otherwise><span class="badge badge-mantenimiento">Pendiente</span></c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    <c:if test="${!haySolicitados}">
+                        <tr><td colspan="6" class="text-center text-muted py-6">No tiene solicitudes registradas.</td></tr>
+                    </c:if>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white py-2 px-4">
+            <nav><ul class="pagination pagination-sm mb-0" id="pagHistSolicitados"></ul></nav>
+        </div>
+    </div>
+</div>
+
 <script>
 (function () {
-    var select = document.getElementById('selectRegistrosHistorial');
-    function porPagina() { return select ? (parseInt(select.value, 10) || 10) : 10; }
+    function porPagina(selectId) {
+        var select = document.getElementById(selectId);
+        return select ? (parseInt(select.value, 10) || 10) : 10;
+    }
 
-    function paginar(idTabla, idPag) {
+    function paginar(idTabla, idPag, selectId) {
         var tabla = document.getElementById(idTabla);
         var cont = document.getElementById(idPag);
         if (!tabla || !cont) return;
         var filas = Array.from(tabla.querySelectorAll('tbody tr'));
-        var pp = porPagina();
+        var pp = porPagina(selectId);
         var total = Math.ceil(filas.length / pp);
         if (total <= 1) { cont.style.display = 'none'; return; }
         var pagina = 1;
@@ -231,22 +316,27 @@ window.reportePersona = {
     }
 
     function aplicar() {
-        paginar('histPrestando', 'pagHistPrestando');
-        paginar('histVencidos', 'pagHistVencidos');
-        paginar('histDevueltos', 'pagHistDevueltos');
+        paginar('histPrestando', 'pagHistPrestando', 'selectHistPrestando');
+        paginar('histVencidos', 'pagHistVencidos', 'selectHistVencidos');
+        paginar('histDevueltos', 'pagHistDevueltos', 'selectHistDevueltos');
+        paginar('histSolicitados', 'pagHistSolicitados', 'selectHistSolicitados');
     }
     aplicar();
-    if (select) select.addEventListener('change', aplicar);
+    ['selectHistPrestando', 'selectHistVencidos', 'selectHistDevueltos', 'selectHistSolicitados'].forEach(function (id) {
+        var s = document.getElementById(id);
+        if (s) s.addEventListener('change', aplicar);
+    });
 })();
 
 function exportarHistorialExcel() {
-    exportMultipleTablesToCSV(['histPrestando', 'histVencidos', 'histDevueltos'], 'historial_completo.csv');
+    exportMultipleTablesToCSV(['histPrestando', 'histVencidos', 'histDevueltos', 'histSolicitados'], 'historial_completo.csv');
 }
 function exportarHistorialPDF() {
     exportMultipleTablesToPDF([
         { id: 'histPrestando', title: 'Historial - Prestando' },
         { id: 'histVencidos', title: 'Historial - Vencidos' },
-        { id: 'histDevueltos', title: 'Historial - Devueltos' }
+        { id: 'histDevueltos', title: 'Historial - Devueltos' },
+        { id: 'histSolicitados', title: 'Historial - Solicitados' }
     ], 'historial_completo.pdf');
 }
 </script>

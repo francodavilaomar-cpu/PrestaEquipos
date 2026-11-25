@@ -10,6 +10,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -25,6 +26,14 @@ public class NotificacionServlet extends BaseServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
         if ("/ir".equals(subRuta(req, ""))) {
             marcarYRedirigir(req, res);
+            return;
+        }
+        if ("1".equals(p(req, "ajax"))) {
+            if (!esEncargado(req)) {
+                res.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
+            responderJsonNotificaciones(req, res);
             return;
         }
         if (!esEncargado(req)) {
@@ -66,6 +75,42 @@ public class NotificacionServlet extends BaseServlet {
             return;
         }
         redirigir(req, res, "/notificaciones");
+    }
+
+    private void responderJsonNotificaciones(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        Usuario u = usuario(req);
+        List<Notificacion> todas = NotificacionDao.deEncargado(u.getId());
+        long noLeidas = NotificacionDao.contarNoLeidas(todas);
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"noLeidas\":").append(noLeidas).append(",\"items\":[");
+        for (int i = 0; i < todas.size(); i++) {
+            Notificacion n = todas.get(i);
+            if (i > 0) {
+                sb.append(",");
+            }
+            sb.append("{");
+            sb.append("\"clave\":\"").append(esc(n.getClave())).append("\",");
+            sb.append("\"tipo\":\"").append(esc(n.getTipo())).append("\",");
+            sb.append("\"titulo\":\"").append(esc(n.getTitulo())).append("\",");
+            sb.append("\"mensaje\":\"").append(esc(n.getMensaje())).append("\",");
+            sb.append("\"fecha\":\"").append(n.getFecha() == null ? "" : esc(n.getFecha().format(fmt))).append("\",");
+            sb.append("\"enlace\":\"").append(esc(n.getEnlace())).append("\",");
+            sb.append("\"icono\":\"").append(esc(n.getIcono())).append("\",");
+            sb.append("\"tono\":\"").append(esc(n.getTono())).append("\",");
+            sb.append("\"leida\":").append(n.isLeida());
+            sb.append("}");
+        }
+        sb.append("]}");
+        res.setContentType("application/json; charset=UTF-8");
+        res.getWriter().write(sb.toString());
+    }
+
+    private static String esc(String v) {
+        if (v == null) {
+            return "";
+        }
+        return v.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
     }
 
     private void listar(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {

@@ -291,8 +291,12 @@ public class PrestamoServlet extends BaseServlet {
         }
         List<Prestamo> prestamos = PrestamoDao.activosYVencidos();
         long vencidos = prestamos.stream().filter(Prestamo::isVencido).count();
+        List<Prestamo> devueltos = PrestamoDao.todos().stream()
+                .filter(p -> "devuelto".equalsIgnoreCase(p.getEstado())).toList();
         req.setAttribute("prestamos", prestamos);
         req.setAttribute("totalVencidos", vencidos);
-        render(req, res, "prestamos/vencidos", "Préstamos Activos y Vencidos", "vencidos");
+        req.setAttribute("prestamosDevueltos", devueltos);
+        req.setAttribute("solicitudes", SolicitudDao.todas());
+        render(req, res, "prestamos/vencidos", "Bandeja de Solicitudes", "vencidos");
     }
 }

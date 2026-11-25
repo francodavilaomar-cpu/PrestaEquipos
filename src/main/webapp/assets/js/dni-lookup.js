@@ -316,7 +316,7 @@
                 cel = '51' + cel;
             }
             const waUrl = 'https://api.whatsapp.com/send?phone=' + cel + '&text=' + encodeURIComponent(mensaje);
-            window.open(waUrl, '_blank');
+            window.open(waUrl, 'whatsappCompose', 'width=900,height=700,scrollbars=yes,resizable=yes');
         } else if (btnMail) {
             const asunto = 'Credenciales de Acceso - Sistema de Préstamos de Equipos UNCP';
             const cuerpoMail = mensaje.replace(/\*/g, ''); // Quitar negritas de WhatsApp para el correo
@@ -324,7 +324,7 @@
             const gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=' + encodeURIComponent(c.email) + '&su=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpoMail);
             
             // Intentar abrir Gmail web, con fallback a mailto
-            const win = window.open(gmailUrl, '_blank');
+            const win = window.open(gmailUrl, 'gmailCompose', 'width=900,height=700,scrollbars=yes,resizable=yes');
             if (!win) {
                 window.location.href = 'mailto:' + encodeURIComponent(c.email) + '?subject=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpoMail);
             }
